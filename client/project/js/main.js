@@ -6,7 +6,9 @@ require.config({
 	baseUrl: 'js'
 });
 require([
+	'lib/link',
+	'lib/action',
 	'index'
-], function(index) {
+], function($, action, index) {
     index.init();
 });

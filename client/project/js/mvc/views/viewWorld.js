@@ -1,0 +1,38 @@
+/**
+ * @author Suker
+ */
+define([
+	'lib/link',
+	'lib/world'
+], function($, World) {
+	return $.extend(function(model) {
+		this.model = model;
+		var _model = this.model;
+		_model.world = new World({
+			width: model.width,
+			height: _model.height,
+			tw: _model.tw,
+			th: _model.th,
+			ow: _model.ow,
+			oh: _model.oh,
+			sw: _model.sw,
+			sh: _model.sh,
+			wordsNum: _model.wordsNum,
+			wordsW: _model.wordsW,
+			wordsH: _model.wordsH,
+			bubbleNum: _model.bubbleNum, //角色说话气泡数量
+			bubbleW: _model.bubbleW, //单元气泡的尺寸
+			bubbleH: _model.bubbleH,
+			asyncUrl: _model.asyncUrl,
+			nodeXStep: _model.nodeXStep,
+			nodeYStep: _model.nodeYStep,
+			tiles: _model.tiles,
+			callEventTimeout: _model.callEventTimeout, //事件触发间隔时间
+			moveDs: _model.moveDs, //移动时8方向分别对应的动作索引编号集合 0:面朝北, 1:面朝东北 2:面朝东 3:面朝东南 4:面朝南 5:面朝西南 6:面朝西 7:面朝西北 
+			stopDs: _model.stopDs
+		});
+		_model = null;
+	}, null, {
+		
+	});
+});

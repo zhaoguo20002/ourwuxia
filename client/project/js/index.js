@@ -4,14 +4,18 @@
  */
 define([
 	'lib/link',
-	'statics'
-], function($, statics) {
+	'statics',
+	'global',
+	'notifys/notifyBase',
+	'data/role10001',
+	'data/sceneData'
+], function($, statics, gl, notify) {
 	return {
 		init: function() {
-			$.pageLoad(function() {
-				console.error(44444);
+			$.init(gl.sys.w, gl.sys.h)
+			.main(function() {
+				statics.init();
 			});
-			statics.init();
 		}
 	};
 });

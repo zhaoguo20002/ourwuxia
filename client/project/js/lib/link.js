@@ -1,8 +1,7 @@
 ﻿/**
  * @author Suker
  * link引擎
- * 版本1.0
- * LeiYoo
+ * 版本1.1
  */
 var link, jsGame;
 (function() {
@@ -1641,7 +1640,7 @@ var link, jsGame;
 		})(),
 		
 		/**
-		 * 系统入口
+		 * 系统入口(window.onload事件执行后执行)
 		 * <br /><a href="#">demo</a>
      	 * @returns {link}
 		 * @param {Function} fn
@@ -1650,65 +1649,78 @@ var link, jsGame;
 			if (_args.system.pageLoad == null) {
 				_args.system.pageLoad = fn; //游戏初始化逻辑
 				window.addEventListener('load', function() {
-					_that.canvas.init();
-					//锚点类型扩展
-					_that.graphics.ANCHOR_LT = _enums.canvas.graphics.ANCHOR_LT;
-					_that.graphics.ANCHOR_LV = _enums.canvas.graphics.ANCHOR_LV;
-					_that.graphics.ANCHOR_LB = _enums.canvas.graphics.ANCHOR_LB;
-					_that.graphics.ANCHOR_HT = _enums.canvas.graphics.ANCHOR_HT;
-					_that.graphics.ANCHOR_HV = _enums.canvas.graphics.ANCHOR_HV;
-					_that.graphics.ANCHOR_HB = _enums.canvas.graphics.ANCHOR_HB;
-					_that.graphics.ANCHOR_RT = _enums.canvas.graphics.ANCHOR_RT;
-					_that.graphics.ANCHOR_RV = _enums.canvas.graphics.ANCHOR_RV;
-					_that.graphics.ANCHOR_RB = _enums.canvas.graphics.ANCHOR_RB;
-					var _getCanvasDom = _that.getDom(_args.canvas.defaultId);
-					if (_getCanvasDom) {
-						//集中定义触屏设备事件
-						if (!_that.canvas.screen.getTouch()) {
-							document.onkeydown = _events.keydown;
-							document.onkeyup = _events.keyup;
-							_getCanvasDom.addEventListener('click', _events.click, false);
-							_getCanvasDom.addEventListener('mousedown', _events.mouseDown, false);
-							_getCanvasDom.addEventListener('mouseup', _events.mouseUp, false);
-							_getCanvasDom.addEventListener('mousemove', _events.mouseMove, false);
-						}
-						else {
-							window.addEventListener('orientationchange', _events.orientationchange, false);
-							_getCanvasDom.addEventListener('touchstart', _events.touchstart, false);
-							_getCanvasDom.addEventListener('touchend', _events.touchend, false);
-							_getCanvasDom.addEventListener('touchmove', _events.touchmove, false);
-							_getCanvasDom.addEventListener('touchcancel', _events.touchcancel, false);
-						}
-					}
-					_getCanvasDom = null;
-					var _getDevice = _that.canvas.screen.getDevice();
-					//处理页面焦点事件
-					if (_getDevice == 'ipad' || _getDevice == 'iphone') {
-						_args.event.focused = true;
-						window.addEventListener('pageshow', _events.pageFocus, false);
-						window.addEventListener('pagehide', _events.pageUnFocus, false);
-					}
-					else {
-						if (_getDevice == 'firefox') {
-							_args.event.focused = true;
-						}
-						window.addEventListener('focus', _events.pageFocus, false);
-						window.addEventListener('blur', _events.pageUnFocus, false);
-					}
-					//初始化背景颜色
-					_that.canvas.fillStyle(_args.canvas.bgColor).fillRect(0, 0, _that.canvas.screen.getWidth(), _that.canvas.screen.getHeight());
-					//开始加载同步资源
-					_args.image.inited = false;
-					_that.gameFlow.run().base().play();
-					if (_args.image.imgObjs.length > 0) {
-						_that.loadImage(_args.image.imgObjs);
-					}
-					else {
-						_events.pageLoaded(); //标示同步资源加载完毕，开始初始化游戏
-					}
+					_that.main(_args.system.pageLoad);
 				}, false);
 			}
 			return _that;
+		},
+		/**
+		 * 系统入口(立即执行)
+		 * <br /><a href="#">demo</a>
+     	 * @returns {link}
+		 * @param {Function} fn
+		 */
+		main: function(fn) {
+			if (_args.system.pageLoad == null) {
+				_args.system.pageLoad = fn; //游戏初始化逻辑
+			}
+			this.canvas.init();
+			//锚点类型扩展
+			this.graphics.ANCHOR_LT = _enums.canvas.graphics.ANCHOR_LT;
+			this.graphics.ANCHOR_LV = _enums.canvas.graphics.ANCHOR_LV;
+			this.graphics.ANCHOR_LB = _enums.canvas.graphics.ANCHOR_LB;
+			this.graphics.ANCHOR_HT = _enums.canvas.graphics.ANCHOR_HT;
+			this.graphics.ANCHOR_HV = _enums.canvas.graphics.ANCHOR_HV;
+			this.graphics.ANCHOR_HB = _enums.canvas.graphics.ANCHOR_HB;
+			this.graphics.ANCHOR_RT = _enums.canvas.graphics.ANCHOR_RT;
+			this.graphics.ANCHOR_RV = _enums.canvas.graphics.ANCHOR_RV;
+			this.graphics.ANCHOR_RB = _enums.canvas.graphics.ANCHOR_RB;
+			var _getCanvasDom = this.getDom(_args.canvas.defaultId);
+			if (_getCanvasDom) {
+				//集中定义触屏设备事件
+				if (!this.canvas.screen.getTouch()) {
+					document.onkeydown = _events.keydown;
+					document.onkeyup = _events.keyup;
+					_getCanvasDom.addEventListener('click', _events.click, false);
+					_getCanvasDom.addEventListener('mousedown', _events.mouseDown, false);
+					_getCanvasDom.addEventListener('mouseup', _events.mouseUp, false);
+					_getCanvasDom.addEventListener('mousemove', _events.mouseMove, false);
+				}
+				else {
+					window.addEventListener('orientationchange', _events.orientationchange, false);
+					_getCanvasDom.addEventListener('touchstart', _events.touchstart, false);
+					_getCanvasDom.addEventListener('touchend', _events.touchend, false);
+					_getCanvasDom.addEventListener('touchmove', _events.touchmove, false);
+					_getCanvasDom.addEventListener('touchcancel', _events.touchcancel, false);
+				}
+			}
+			_getCanvasDom = null;
+			var _getDevice = this.canvas.screen.getDevice();
+			//处理页面焦点事件
+			if (_getDevice == 'ipad' || _getDevice == 'iphone') {
+				_args.event.focused = true;
+				window.addEventListener('pageshow', _events.pageFocus, false);
+				window.addEventListener('pagehide', _events.pageUnFocus, false);
+			}
+			else {
+				if (_getDevice == 'firefox') {
+					_args.event.focused = true;
+				}
+				window.addEventListener('focus', _events.pageFocus, false);
+				window.addEventListener('blur', _events.pageUnFocus, false);
+			}
+			//初始化背景颜色
+			this.canvas.fillStyle(_args.canvas.bgColor).fillRect(0, 0, this.canvas.screen.getWidth(), this.canvas.screen.getHeight());
+			//开始加载同步资源
+			_args.image.inited = false;
+			this.gameFlow.run().base().play();
+			if (_args.image.imgObjs.length > 0) {
+				this.loadImage(_args.image.imgObjs);
+			}
+			else {
+				_events.pageLoaded(); //标示同步资源加载完毕，开始初始化游戏
+			}
+			return this;
 		},
 		/**
 		 * 游戏菜单逻辑生命周期

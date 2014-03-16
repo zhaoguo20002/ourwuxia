@@ -1,5 +1,7 @@
 /**
  * @author Suker
+ * 世界实体类
+ * 版本1.1
  * 与carmark.js、action.js插件耦合
  * 主要处理场景显示、精灵动画、精灵移动
  * 该框架类可以用于回合制RPG游戏和ARPG即时战斗RPG游戏
@@ -7,8 +9,9 @@
 define([
 	'lib/link', 
 	'lib/carmark', 
-	'lib/astar'
-], function($, carmark, astar) {
+	'lib/astar',
+	'lib/action'
+], function($, carmark, astar, action) {
 	var _enums = {
 		//碰撞层地砖类型枚举
 		oType: {

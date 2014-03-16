@@ -1,5 +1,4 @@
 /**
- * @author Suker
  * A*寻路算法
  */
 define([

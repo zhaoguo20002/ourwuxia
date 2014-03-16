@@ -1,8 +1,7 @@
 ﻿/**
  * @author Suker
  * link引擎动画组件
- * 版本1.0
- * LeiYoo
+ * 版本1.1
  */
 define([
 	'lib/link'
@@ -47,7 +46,7 @@ define([
 			return sprites;
 	};
 	
-	link.action = {};
+	$.action = {};
 	
 	//-------------------link.action.Role 实体类定义开始--------------------------------------------
 	/**
@@ -62,7 +61,7 @@ define([
 	 * @param {array} frames [角色模型动画帧规范序列]
 	 * @param {array} actions [角色模型动作规范序列]
 	 */
-	link.action.Role = function(sprites, x, y, current, imageNames, rects, frames, actions) {
+	$.action.Role = function(sprites, x, y, current, imageNames, rects, frames, actions) {
 		this.imageNames = imageNames || [];
 		this.rects = rects || [];
 		this.frames = frames || [];
@@ -109,7 +108,7 @@ define([
 	 * @param {bool} notReset
 	 * @param {bool} stopedRefresh
 	 */
-	link.action.Role.prototype.setSprite = function(cr, notReset, stopedRefresh) {
+	$.action.Role.prototype.setSprite = function(cr, notReset, stopedRefresh) {
 		if (this._locked) {
 			return this;
 		}
@@ -149,7 +148,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {array[link.active.Role]} links
 	 */
-	link.action.Role.prototype.addLinks = function(links) {
+	$.action.Role.prototype.addLinks = function(links) {
 		this.links = links || [];
 		//角色连接物方向和主体同步
 		for (var li = 0, lk; lk = this.links[li]; li++) {
@@ -160,21 +159,21 @@ define([
 	/**
 	 * 清空关联角色
 	 */
-	link.action.Role.prototype.clearLinks = function() {
+	$.action.Role.prototype.clearLinks = function() {
 		this.links = [];
 		return this;
 	};
 	/**
 	 * 锁定动作不可变
 	 */
-	link.action.Role.prototype.lockSprite = function() {
+	$.action.Role.prototype.lockSprite = function() {
 		this._locked = true;
 		return this;
 	};
 	/**
 	 * 解开锁定动作
 	 */
-	link.action.Role.prototype.unlockSprite = function() {
+	$.action.Role.prototype.unlockSprite = function() {
 		this._locked = false;
 		return this;
 	};
@@ -183,7 +182,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {link.trans} trans
 	 */
-	link.action.Role.prototype.setTrans = function(trans) {
+	$.action.Role.prototype.setTrans = function(trans) {
 		this.getSprite().trans = trans;
 		return this;
 	};
@@ -192,7 +191,7 @@ define([
 		 * @returns {link.active.Role}
 	 * @param {number} index
 	 */
-	link.action.Role.prototype.getSprite = function(index) {
+	$.action.Role.prototype.getSprite = function(index) {
 		return this.sprites[index == null ? this.current : index];
 	};
 	/**
@@ -200,14 +199,14 @@ define([
 	 * @returns {number}
 	 * @param {number} index
 	 */
-	link.action.Role.prototype.getFrame = function(index) {
+	$.action.Role.prototype.getFrame = function(index) {
 		return this.frames[index == null ? this.getSprite().getFrame().args[0] : index];
 	};
 	/**
 	 * 动作监听
 	 * @returns {link.active.Role}
 	 */
-	link.action.Role.prototype.action = function() {
+	$.action.Role.prototype.action = function() {
 		var _sprite = this.getSprite();
 		if (!_sprite)
 			return this;
@@ -280,7 +279,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {bool} act
 	 */
-	link.action.Role.prototype.render = function(act) {
+	$.action.Role.prototype.render = function(act) {
 		var _sprite = this.getSprite();
 		if (_sprite && this._fA) {
 			var _fa = this._fA, _len = _fa.length, _actRenderContext = $.canvas, _trans = _sprite.trans, _rect, _imgId, _img;
@@ -371,7 +370,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {number} zoom
 	 */
-	link.action.Role.prototype.setZoom = function(zoom) {
+	$.action.Role.prototype.setZoom = function(zoom) {
 		this.zoom = zoom;
 		return this;
 	};
@@ -380,7 +379,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {array} zooms
 	 */
-	link.action.Role.prototype.setZoomTransition = function(zooms) {
+	$.action.Role.prototype.setZoomTransition = function(zooms) {
 		if (zooms && zooms.length > 0) {
 			this._zooms = zooms;
 		}
@@ -390,7 +389,7 @@ define([
 	 * 判断缩放比例变换是否停止
 	 * @returns {bool}
 	 */
-	link.action.Role.prototype.endZoomTransition = function() {
+	$.action.Role.prototype.endZoomTransition = function() {
 		return this._zooms.length == 0;
 	};
 	/**
@@ -399,7 +398,7 @@ define([
 	 * @param {number} spriteIndex
 	 * @param {number} frameIndex
 	 */
-	link.action.Role.prototype.getBodyRect = function(spriteIndex, frameIndex) {
+	$.action.Role.prototype.getBodyRect = function(spriteIndex, frameIndex) {
 		var _sprite = this.getSprite(spriteIndex != null ? Math.abs(spriteIndex) : null);
 		if (!_sprite) {
 			return null;
@@ -422,7 +421,7 @@ define([
 	 * @param {number} spriteIndex
 	 * @param {number} frameIndex
 	 */
-	link.action.Role.prototype.getAttackRect = function(spriteIndex, frameIndex) {
+	$.action.Role.prototype.getAttackRect = function(spriteIndex, frameIndex) {
 		var _sprite = this.getSprite(spriteIndex != null ? Math.abs(spriteIndex) : null);
 		if (!_sprite) {
 			return null;
@@ -444,7 +443,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {number} step
 	 */
-	link.action.Role.prototype.setStep = function(step) {
+	$.action.Role.prototype.setStep = function(step) {
 		this.step = step || 0;
 		for (var _i = 0, _len = this.sprites.length; _i < _len; _i++) {
 			this.sprites[_i].setStep(step);
@@ -458,7 +457,7 @@ define([
 	 * @param {string} type1
 	 * @param {string} type2
 	 */
-	link.action.Role.prototype.collision = function(role, type1, type2) {
+	$.action.Role.prototype.collision = function(role, type1, type2) {
 		if (!role) {
 			return false;
 		}
@@ -510,7 +509,7 @@ define([
 	 * @param {number} height
 	 * @param {string} type1
 	 */
-	link.action.Role.prototype.collisionInput = function(x, y, width, height, type1) {
+	$.action.Role.prototype.collisionInput = function(x, y, width, height, type1) {
 		var _type1 = type1 || 'aR', _R1;
 		if (_type1 == 'aR') {
 			_R1 = this.aR;
@@ -534,7 +533,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {number} step
 	 */
-	link.action.Role.prototype.setLoop = function(loop) {
+	$.action.Role.prototype.setLoop = function(loop) {
 		for (var _i = 0, _len = this.sprites.length; _i < _len; _i++) {
 			this.sprites[_i].setLoop(loop);
 		}
@@ -546,7 +545,7 @@ define([
 	 * @param {array} path
 	 * @param {bool} skipMoveDs
 	 */
-	link.action.Role.prototype.setPath = function(path, skipMoveDs) {
+	$.action.Role.prototype.setPath = function(path, skipMoveDs) {
 		this._path = path || [];
 		if (this._path.length > 0 && this.onstart) { //开始回调
 			this.onstart(this);
@@ -561,7 +560,7 @@ define([
 	 * 添加一组新的移动路径到原有路径里
 	 * @param {array} path
 	 */
-	link.action.Role.prototype.concatPath = function(path){
+	$.action.Role.prototype.concatPath = function(path){
 		this._path = this._path.concat(path || []);
 		return this;
 	};
@@ -569,21 +568,21 @@ define([
 	 * 判断移动是否停止
 	 * @returns {bool}
 	 */
-	link.action.Role.prototype.endPath = function() {
+	$.action.Role.prototype.endPath = function() {
 		return this._path.length == 0;
 	};
 	/**
 	 * 清除路径使角色停止移动
 	 * @returns {link.active.Role}
 	 */
-	link.action.Role.prototype.clearPath = function() {
+	$.action.Role.prototype.clearPath = function() {
 		this._path = [];
 		return this;
 	};
 	/**
 	 * 返回当前角色路径的数量
 	 */
-	link.action.Role.prototype.getPathCount = function() {
+	$.action.Role.prototype.getPathCount = function() {
 		return this._path.length;
 	};
 	
@@ -593,7 +592,7 @@ define([
 	 * @param {number} y
 	 * @param {number} speed
 	 */
-	link.action.Role.prototype.moveTo = function(x, y, speed) {
+	$.action.Role.prototype.moveTo = function(x, y, speed) {
 		if (speed) {
 			this.speed = Math.abs(speed);
 		}
@@ -605,7 +604,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {array} moveDs
 	 */
-	link.action.Role.prototype.setMoveDs = function(moveDs) {
+	$.action.Role.prototype.setMoveDs = function(moveDs) {
 		this._moveDs = moveDs || [4, 7, 5, 5, 6, -5, -5, -7];
 		return this;
 	};
@@ -614,7 +613,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {array} stopDs
 	 */
-	link.action.Role.prototype.setStopDs = function(stopDs) {
+	$.action.Role.prototype.setStopDs = function(stopDs) {
 		this._stopDs = stopDs || [0, -3, 1, 1, 2, -1, -1, -3];
 		return this;
 	};
@@ -626,7 +625,7 @@ define([
 	 * @param {number} mapOffx
 	 * @param {number} mapOffy
 	 */
-	link.action.Role.prototype.mark = function(x, y, mapOffx, mapOffy) {
+	$.action.Role.prototype.mark = function(x, y, mapOffx, mapOffy) {
 		if (x != null) {
 			this.x = x;
 		}
@@ -647,7 +646,7 @@ define([
 	 * @param {number} nodeXStep
 	 * @param {number} nodeYStep
 	 */
-	link.action.Role.prototype.setSpeed = function(nodeXStep, nodeYStep) {
+	$.action.Role.prototype.setSpeed = function(nodeXStep, nodeYStep) {
 		if (nodeXStep) {
 			this.speed = Math.abs(nodeXStep);
 		}
@@ -661,7 +660,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {number} angle
 	 */
-	link.action.Role.prototype.setRotate = function(angle) {
+	$.action.Role.prototype.setRotate = function(angle) {
 		this.angle = Math.abs(angle) || 0;
 		return this;
 	};
@@ -670,7 +669,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {array} angles
 	 */
-	link.action.Role.prototype.setRotateTransition = function(angles) {
+	$.action.Role.prototype.setRotateTransition = function(angles) {
 		if (angles && angles.length > 0) {
 			this._angles = angles;
 		}
@@ -680,7 +679,7 @@ define([
 	 * 判断旋转比例变换是否停止
 	 * @returns {bool}
 	 */
-	link.action.Role.prototype.endRotateTransition = function() {
+	$.action.Role.prototype.endRotateTransition = function() {
 		return this._angles.length == 0;
 	};
 	/**
@@ -689,7 +688,7 @@ define([
 	 * @param {number} vx
 	 * @param {number} vy
 	 */
-	link.action.Role.prototype.move = function(vx, vy) {
+	$.action.Role.prototype.move = function(vx, vy) {
 		if (vx != null) {
 			this.x += vx;
 		}
@@ -704,7 +703,7 @@ define([
 	 * @returns {link.active.Role}
 	 * @param {number} angle
 	 */
-	link.action.Role.prototype.rotate = function(angle) {
+	$.action.Role.prototype.rotate = function(angle) {
 		if (angle != null) {
 			this.angle += angle;
 		}
@@ -713,14 +712,14 @@ define([
 	/**
 	 * 查询角色是否停止
 	 */
-	link.action.Role.prototype.stoped = function() {
+	$.action.Role.prototype.stoped = function() {
 		return this.svx == null;
 	};
 	/**
 	 * 获取换算过后的帧索引
 	 * 注意: 此方法可以自动换算成翻转后的负数索引
 	 */
-	link.action.Role.prototype.getCurrent = function() {
+	$.action.Role.prototype.getCurrent = function() {
 		return this.current * (this.getSprite().trans == $.trans.TRANS_NONE ? 1 : -1);
 	};
 	
@@ -736,7 +735,7 @@ define([
 	 * @param {number} current
 	 * @param {number} step
 	 */
-	link.action.Sprite = function(frames, loop, current, step) {
+	$.action.Sprite = function(frames, loop, current, step) {
 		this.frames = frames || [];
 		this.loop = loop;
 		this.current = current || 0;
@@ -750,7 +749,7 @@ define([
 	 * @returns {link.active.Sprite}
 	 * @param {number} cf
 	 */
-	link.action.Sprite.prototype.setFrame = function(cf) {
+	$.action.Sprite.prototype.setFrame = function(cf) {
 		this.current = cf >= this.frames.length ? this.frames.length - 1 : cf > 0 ? cf : 0;
 		if (this.getFrame().step)
 			this.runStep = this.getFrame().step;
@@ -761,14 +760,14 @@ define([
 	 * @returns {object}
 	 * @param {number} index
 	 */
-	link.action.Sprite.prototype.getFrame = function(index) {
+	$.action.Sprite.prototype.getFrame = function(index) {
 		return this.frames[index == null ? this.current : index];
 	};
 	/**
 	 * 下一帧
 	 * @returns {link.active.Sprite}
 	 */
-	link.action.Sprite.prototype.nextFrame = function() {
+	$.action.Sprite.prototype.nextFrame = function() {
 		if (!this.loop && this.endFrame())
             return this;
 		if (this.frames.length > 0) {
@@ -797,7 +796,7 @@ define([
 	 * 上一帧
 	 * @returns {link.active.Sprite}
 	 */
-	link.action.Sprite.prototype.preFrame = function() {
+	$.action.Sprite.prototype.preFrame = function() {
 		if (this.frames.length > 0) {
 			if (this.runStep <= 0) {
 				//this.runStep = this.step;
@@ -828,7 +827,7 @@ define([
 	 * @returns {bool}
 	 * @param {number} cr
 	 */
-	link.action.Sprite.prototype.endFrame = function(cr) {
+	$.action.Sprite.prototype.endFrame = function(cr) {
 		var _cr = this.frames.length - 1;
 		if (cr != null && cr >= 0 && cr <= this.frames.length - 1)
 			_cr = cr;
@@ -838,7 +837,7 @@ define([
 	 * 判断是否到达动画帧集合头部
 	 * @returns {bool}
 	 */
-	link.action.Sprite.prototype.firstFrame = function() {
+	$.action.Sprite.prototype.firstFrame = function() {
 		return this.current == 0 && this.runStep == 0;
 	};
 	/**
@@ -846,7 +845,7 @@ define([
      * @returns {link.active.Sprite}
 	 * @param {number} step
 	 */
-	link.action.Sprite.prototype.setStep = function(step) {
+	$.action.Sprite.prototype.setStep = function(step) {
 		this.step = step || 0;
 		this.runStep = this.getFrame().step || this.step;
 		return this;
@@ -856,7 +855,7 @@ define([
 	 * @returns {link.active.Sprite}
 	 * @param {bool} loop
 	 */
-	link.action.Sprite.prototype.setLoop = function(loop) {
+	$.action.Sprite.prototype.setLoop = function(loop) {
 		this.loop = loop;
 		return this;
 	};
@@ -891,14 +890,14 @@ define([
 	 * @class
 	 * @param {array} sprites
 	 */
-	link.action.Fragment = function(sprites) {
+	$.action.Fragment = function(sprites) {
 		this.sprites = sprites || [];
 	}
 	/**
 	 * 动作片段帧出队列，直到值为null
 	 * @returns {object}
 	 */
-	link.action.Fragment.prototype.queue = function() {
+	$.action.Fragment.prototype.queue = function() {
 		return _fragmentNext(this);
 	};
 	
