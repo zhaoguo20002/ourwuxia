@@ -1,8 +1,7 @@
 var sceneDataNameSpace = {}, sceneDataMapping;
 define([
-	'lib/link',
-	'global'
-], function($, gl) {
+	'lib/link'
+], function($) {
 	sceneDataNameSpace.getScene = function(picId) {
 		switch (picId) {
 			//测试场景
@@ -282,4 +281,5 @@ define([
 		effect: {
 		}
 	};
+	return { sceneDataNameSpace: sceneDataNameSpace, sceneDataMapping: sceneDataMapping };
 });

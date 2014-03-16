@@ -7,8 +7,13 @@ require.config({
 });
 require([
 	'lib/link',
+	'index',
 	'lib/action',
-	'index'
-], function($, action, index) {
+	'statics',
+	'global',
+	'notifys/notifyBase',
+	'data/role10001',
+	'data/sceneData'
+], function($, index) {
     index.init();
 });

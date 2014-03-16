@@ -6,9 +6,7 @@ define([
 	'lib/link',
 	'statics',
 	'global',
-	'notifys/notifyBase',
-	'data/role10001',
-	'data/sceneData'
+	'notifys/notifyBase'
 ], function($, statics, gl, notify) {
 	return {
 		init: function() {
