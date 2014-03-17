@@ -12,7 +12,9 @@ define([
 	return {
 		init: function() {
 			$.init(gl.sys.w, gl.sys.h)
-			.pushImage([])
+			.pushImage([], function(loaded, count, type) {
+				console.error('下载完成');
+			})
 			.loadingCallBack(function(loaded, count) {
 				console.error(loaded, count);
 			})

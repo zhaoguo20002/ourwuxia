@@ -908,6 +908,8 @@ var link, jsGame;
 			.fillText(loadStor, screenW - _that.canvas.measureText(loadStor).width - 5,  screenH - 10);
             screenW = screenH = pw = ph = sLeft = sTop = loadStor = null;
 		},
+		//加载资源完毕回调事件
+		loadingEndCallBack: null,
 		/**
 		 * 获取锚点坐标
          * @returns {object}
@@ -1825,6 +1827,10 @@ var link, jsGame;
         						}
 								if (_count > 0) {
 									_events.loadingCallBack(_loaded, _count, 'image'); //适时返回图形资源的加载进度
+								}
+								if (_loaded == _count && _events.loadingEndCallBack) {
+									_events.loadingEndCallBack(_loaded, _count, 'image'); //适时返回图形资源的加载进度
+									_events.loadingEndCallBack = null;
 								}
 								_loaded = _count = null;
 							}
@@ -2956,8 +2962,9 @@ var link, jsGame;
 		 * 如果想要在pageLoad内加载同步图形资源可以用loadImage<br />
 		 * @returns {link}
 		 * @param {array} imgs
+		 * @param {Function} fn
 		 */
-		pushImage: function(imgs) {
+		pushImage: function(imgs, fn) {
 			//同步加载资源只有一次机会，之后想要加载资源可以使用loadImage进行分步资源加载
 			if (_args.image.inited) {
 				return this;
@@ -2970,6 +2977,7 @@ var link, jsGame;
                     _args.image.imgObjs.push(imgs[i]);
                 }
 			}
+			this.loadingEndCallBack(fn);
             _img = null;
 			return this;
 		},
@@ -2980,8 +2988,9 @@ var link, jsGame;
 		 * 因为加载图形资源涉及到canvas渲染操作，所以在pageLoad方法体内执行才能确保canvas初始化完全。<br />
 		 * @returns {link}
 		 * @param {array} imgs
+		 * @param {Function} fn
 		 */
-		loadImage: function(imgs) {
+		loadImage: function(imgs, fn) {
 			if (_args.system.gameFlow != _enums.system.gameFlowType.loadImage && imgs.length > 0) {
 				_args.system.loadedImageToGameFlow = _args.system.gameFlow; //记录分布加载资源开始时系统所处的流程位置，加载完成后自动回到该流程
 				_args.system.gameFlow = _enums.system.gameFlowType.loadImage;
@@ -2996,6 +3005,7 @@ var link, jsGame;
 						_args.image.countLoaded++;
 					}
 				}
+				this.loadingEndCallBack(fn);
 			}
 			return this;
 		},
@@ -3032,8 +3042,19 @@ var link, jsGame;
 		 * @param {Object} fn
 		 */
 		loadingCallBack: function(fn) {
-			if (typeof fn == 'function') {
+			if (typeof fn === 'function') {
 				_events.loadingCallBack = fn;
+			}
+			return this;
+		},
+		/**
+		 * 加载资源完成后回调
+		 * @returns {link}
+		 * @param {Function} fn
+		 */
+		loadingEndCallBack: function(fn) {
+			if (typeof fn === 'function') {
+				_events.loadingEndCallBack = fn;
 			}
 			return this;
 		},
