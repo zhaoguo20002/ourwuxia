@@ -2,32 +2,10 @@
  * @author Suker
  * 静态方法集合
  */
-var statics;
 define([
-	'lib/link',
-	'notifys/notifyWorld',
-	'mvc/models/modelWorld'
-], function($, notify, modelWorld) {
-	return statics = {
-		init: function() {
-			$.active(function(args) {
-				switch (args.to) {
-					case 'start':
-						if (modelWorld.entity) {
-							modelWorld.entity.action();
-						}
-						break;
-					default:
-					
-						break;
-				}
-			}).events.mouseDown(function(e, offX, offY) {
-				if (modelWorld.entity) {
-					modelWorld.entity.touchStart(offX, offY);
-				}
-			});
-			notify.notify('createWorld');
-		},
+	'lib/link'
+], function($) {
+	return {
 		//将秒换算后返回
         getTime: function(s) {
             var h, m, s = ~~s;

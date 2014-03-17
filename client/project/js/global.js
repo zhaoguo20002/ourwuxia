@@ -4,11 +4,8 @@
  * 强制遵守的规范:
  * 获取图形资源路径必须使用gl.getImgUrl、gl.getImgSrc静态方法，严禁直接使用'img/pic.png'这样的硬编码格式获取图形资源路径
  */
-
-var gl = {}, CDN = '', 
-lastVersionPath = 'clientBranches/channel_dahuangwushen/baseline_0.040.400/', 
-versionId = '0.001.024';
 define(['lib/link'], function($) {
+	var CDN = '', versionId = '0.1', gl = {};
 	//获取图片url路径切片
 	gl.getImgUrl = function(src, sx, sy) {
 		sx = sx || 0;

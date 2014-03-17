@@ -122,7 +122,7 @@ define([
 	                var tileid = this.args.map[_ci][_cj];
 	                if (tileid != 0) {//为0时候代表改块为空
 	                    tileid = tileid < 0 ? -tileid : tileid;
-						var tile = this.getTile(tileid);;
+						var tile = this.getTile(tileid);
 						if (tile)
 							this.args.carGp.drawImage($.getImage(tile.imageid), tile.sx, tile.sy, this.args.titleW, this.args.titleH, _cj * this.args.titleW, _ci * this.args.titleH, this.args.titleW, this.args.titleH);
 						tile = null;
@@ -260,7 +260,7 @@ define([
 						if (tile) {
 							_getImg = $.getImage(tile.imageid);
 							if (_getImg.loaded) {
-								this.args.carGp.drawImage($.getImage(tile.imageid), tile.sx, tile.sy, this.args.titleW, this.args.titleH, _cj * this.args.titleW, _ci * this.args.titleH, this.args.titleW, this.args.titleH);
+								this.args.carGp.drawImage(_getImg, tile.sx, tile.sy, this.args.titleW, this.args.titleH, _cj * this.args.titleW, _ci * this.args.titleH, this.args.titleW, this.args.titleH);
 							}
 						}
 						tile = null;

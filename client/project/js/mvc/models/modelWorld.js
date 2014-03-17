@@ -3,8 +3,9 @@
  * 世界场景数据结构
  */
 define([
-	'lib/link'
-], function($) {
+	'lib/link',
+	'data/sceneData'
+], function($, sceneData) {
 	return {
 		args: {
 			world: null,
@@ -25,7 +26,7 @@ define([
 			asyncUrl: 'js/lib/asyncAstar.js',
 			nodeXStep: 4,
 			nodeYStep: 4,
-			tiles: sceneDataMapping ? sceneDataMapping.tiles : [],
+			tiles: sceneData.sceneDataMapping ? sceneData.sceneDataMapping.tiles : [],
 			callEventTimeout: 100, //事件触发间隔时间
 			moveDs: [7, 6, 6, 6, 4, 5, 5, 5],
 			stopDs: [3, 2, 2, 2, 0, 1, 1, 1],

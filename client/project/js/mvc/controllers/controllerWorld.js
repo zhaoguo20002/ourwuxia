@@ -2,8 +2,9 @@
  * @author Suker
  */
 define([
-	'lib/link'
-], function($) {
+	'lib/link',
+	'statics'
+], function($, statics) {
 	return $.extend(function(view) {
 		this.view = view;
 	}, null, {
