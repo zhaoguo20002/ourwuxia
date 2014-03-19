@@ -7,14 +7,14 @@
 define([
 	'lib/link'
 ], function($) {
-	$.carmark = $.Carmark = $.extend(function(scrW, scrH, titleW, titleH, offsetTileNumber, map, tiles, cache) {
+	$.carmark = $.Carmark = $.extend(function(scrW, scrH, titleW, titleH, offsetTileNumber, map, tiles, cache, patchs) {
 		this.args = {
 			carWidth: 0,
 			carHeight: 0,
 			carTitleWidth: 0,
 			carTitleHeight: 0,
-			scrWidth: 0,
-			scrHeight: 0,
+			scrWidth: scrW, //屏幕宽高
+			scrHeight: scrH,
 			carx: 0, //卡马克线坐标
 			cary: 0,
 			mapOffx: 0,  // 缓冲区在地图中的X坐标
@@ -23,30 +23,21 @@ define([
 			carGp: null,
 			buffSize: 0,
 			titleSize: 0,
-			titleW: 0,
-			titleH: 0,
+			titleW: titleW, //地砖宽高
+			titleH: titleH,
 			mapLastx: 0,
 	        mapLasty: 0,
-			map: [[]],
+			map: map || [[]], //地图数组
+			patchs: patchs || {}, //补丁mapping，在地砖上再盖个东西
 			tilesType: 'array', //array为数组型地砖列表、json为键值型地砖列表
-			tiles: null,
+			tiles: tiles, //地砖图形资源引用数组
 			xState: 0,
 			yState: 0
 		};
-		this.args.carx = 0; //卡马克线坐标
-		this.args.cary = 0;
-		this.args.mapOffx = 0;    // 地图在缓冲区的X偏移量
-		this.args.mapOffy = 0;   // 地图在缓冲区的Y偏移量
-		this.args.scrWidth = scrW; //屏幕宽高
-        this.args.scrHeight = scrH;
-        this.args.titleW = titleW; //地砖宽高
         this.tw = this.args.titleW;
-        this.args.titleH = titleH;
 		this.th = this.args.titleH;
-        this.args.buffW = titleW * offsetTileNumber; //外圈缓冲地砖宽高
-        this.args.buffH = titleH * offsetTileNumber;
-		this.args.map = map; //地图数组
-		this.args.tiles = tiles; //地砖数组
+        this.args.buffW = this.args.titleW * offsetTileNumber; //外圈缓冲地砖宽高
+        this.args.buffH = this.args.titleH * offsetTileNumber;
 		//判断地砖列表类型
 		if (this.args.tiles.length != null)
 			this.args.tilesType = 'array';
@@ -55,12 +46,12 @@ define([
 		
         var temp = 0;
         while (temp < this.args.scrWidth) {
-            temp += titleW;
+            temp += this.args.titleW;
         }
         this.args.carWidth = this.args.buffW + temp;
         temp = 0;
         while (temp < this.args.scrHeight) {
-            temp += titleH;
+            temp += this.args.titleH;
         }
         this.args.carHeight = this.args.buffH + temp;
 		temp = null;
@@ -68,8 +59,8 @@ define([
 		this.args.titleSH = this.args.map.length;
         this.args.titleSW = this.args.map[0].length;
 		//地砖个数
-        this.args.carTitleWidth = this.args.carWidth / titleW;
-        this.args.carTitleHeight = this.args.carHeight / titleH;
+        this.args.carTitleWidth = this.args.carWidth / this.args.titleW;
+        this.args.carTitleHeight = this.args.carHeight / this.args.titleH;
 		//创建缓冲区
 		if (!this.args.carBuffer) {
 			if (cache)
@@ -88,8 +79,8 @@ define([
 			this.args.carBuffer.style.height = this.args.carBuffer.height + 'px';
 		}
 		
-        this.args.mapLastx = this.args.titleSW * titleW - this.args.scrWidth;
-        this.args.mapLasty = this.args.titleSH * titleH - this.args.scrHeight;
+        this.args.mapLastx = this.args.titleSW * this.args.titleW - this.args.scrWidth;
+        this.args.mapLasty = this.args.titleSH * this.args.titleH - this.args.scrHeight;
 		this.carWidth = this.args.carWidth;
 		this.carHeight = this.args.carHeight;
 		this.tileW = this.args.titleSW;
@@ -116,24 +107,49 @@ define([
 			var _startI = this.getIndexCarY(), _startJ = this.getIndexCarX(),
 			_endI = this.getIndexBuffLastY(), _endJ = this.getIndexBuffLastX();
 			for (var _ci = _startI; _ci <= _endI; _ci++) {
-				if (!this.args.map[_ci])
-					continue;
 	            for (var _cj = _startJ; _cj <= _endJ; _cj++) {
-	                var tileid = this.args.map[_ci][_cj];
-	                if (tileid != 0) {//为0时候代表改块为空
-	                    tileid = tileid < 0 ? -tileid : tileid;
-						var tile = this.getTile(tileid);
-						if (tile)
-							this.args.carGp.drawImage($.getImage(tile.imageid), tile.sx, tile.sy, this.args.titleW, this.args.titleH, _cj * this.args.titleW, _ci * this.args.titleH, this.args.titleW, this.args.titleH);
-						tile = null;
-	                } 
-					else {//以背景色彩填充之
-						this.args.carGp.fillStyle = '#000';
-						this.args.carGp.fillRect(_cj * this.args.titleW, _ci * this.args.titleH, this.args.titleW, this.args.titleH);
-	                    
-	                }
+	                this.refreshTileAndPatch(_ci, _cj, _cj * this.args.titleW, _ci * this.args.titleH);
 	            }
 	        }
+			_startI = _startJ = _endI = _endJ = null;
+		},
+		/**
+		 * 刷新一块地砖和一块补丁
+		 * @param {number} i
+		 * @param {number} j
+		 */
+		refreshTileAndPatch: function(i, j, x, y) {
+			if (!this.args.map[i]) {
+				return false;
+			}
+			var _getImg, tileid = this.args.map[i][j], tile;
+            if (tileid != 0) {//为0时候代表改块为空
+                tileid = tileid < 0 ? -tileid : tileid;
+				tile = this.getTile(tileid);
+				if (tile) {
+					_getImg = $.getImage(tile.imageid);
+					if (_getImg.loaded) {
+						this.args.carGp.drawImage(_getImg, tile.sx, tile.sy, this.args.titleW, this.args.titleH, x, y, this.args.titleW, this.args.titleH);						
+					}
+				}
+            } 
+			else {//以背景色彩填充之
+				this.args.carGp.fillStyle = '#000';
+				this.args.carGp.fillRect(x, y, this.args.titleW, this.args.titleH);
+            }
+			//获取地砖补丁地砖索引
+			tileid = this.args.patchs[i + '_' + j];
+			if (tileid) {
+                tileid = tileid < 0 ? -tileid : tileid;
+				tile = this.getTile(tileid);
+				if (tile) {
+					_getImg = $.getImage(tile.imageid);
+					if (_getImg.loaded) {
+						this.args.carGp.drawImage(_getImg, tile.sx, tile.sy, this.args.titleW, this.args.titleH, x, y, this.args.titleW, this.args.titleH);
+					}
+				}
+			}
+			_getImg = tileid = tile = null;
 		},
 		/**
 		 * 卷动
@@ -249,29 +265,9 @@ define([
 		 */
 		initBuffer: function() {
 			for (var _ci = 0; _ci < this.args.carTitleHeight; _ci++) {
-				if (!this.args.map[_ci])
-					continue;
-				var _getImg;
 	            for (var _cj = 0; _cj < this.args.carTitleWidth; _cj++) {
-	                var tileid = this.args.map[_ci][_cj];
-	                if (tileid != 0) {//为0时候代表改块为空
-	                    tileid = tileid < 0 ? -tileid : tileid;
-						var tile = this.getTile(tileid);
-						if (tile) {
-							_getImg = $.getImage(tile.imageid);
-							if (_getImg.loaded) {
-								this.args.carGp.drawImage(_getImg, tile.sx, tile.sy, this.args.titleW, this.args.titleH, _cj * this.args.titleW, _ci * this.args.titleH, this.args.titleW, this.args.titleH);
-							}
-						}
-						tile = null;
-	                } 
-					else {//以背景色彩填充之
-						this.args.carGp.fillStyle = '#000';
-						this.args.carGp.fillRect(_cj * this.args.titleW, _ci * this.args.titleH, this.args.titleW, this.args.titleH);
-	                    
-	                }
+	                this.refreshTileAndPatch(_ci, _cj, _cj * this.args.titleW, _ci * this.args.titleH);
 	            }
-				_getImg = null;
 	        }
 		},
         /**
@@ -418,37 +414,11 @@ define([
 			var vy;
 	        for (var _bj = 0; _bj < titleHeight; _bj++) {
 	            vy = _bj * this.args.titleH + desty;
-				if (!this.args.map[indexMapy + _bj])
-					continue;
-	            var tileid = this.args.map[indexMapy + _bj][indexMapx];
-	            if (tileid != 0) {
-	                tileid = tileid < 0 ? -tileid : tileid;
-					var tile = this.getTile(tileid);;
-					if (tile)
-						this.args.carGp.drawImage($.getImage(tile.imageid), tile.sx, tile.sy, this.args.titleW, this.args.titleH, destx, vy, this.args.titleW, this.args.titleH);
-	            	tile = null;
-				} 
-				else {
-	                this.args.carGp.fillStyle = '#000';
-					this.args.carGp.fillRect(destx, vy, this.args.titleW, this.args.titleH);
-	            }
+				this.refreshTileAndPatch(indexMapy + _bj, indexMapx, destx, vy);
 	        }
 	        for (var _bk = titleHeight; _bk < this.args.carTitleHeight; _bk++) {
 	            vy = (_bk - titleHeight) * this.args.titleH;
-				if (!this.args.map[indexMapy + _bk])
-					continue;
-	            var tileid = this.args.map[indexMapy + _bk][indexMapx];
-	            if (tileid != 0){
-	                tileid = tileid < 0 ? -tileid : tileid;
-					var tile = this.getTile(tileid);;
-					if (tile)
-						this.args.carGp.drawImage($.getImage(tile.imageid), tile.sx, tile.sy, this.args.titleW, this.args.titleH, destx, vy, this.args.titleW, this.args.titleH);
-	            	tile = null;
-				} 
-				else {
-	                this.args.carGp.fillStyle = '#000';
-					this.args.carGp.fillRect(destx, vy, this.args.titleW, this.args.titleH);
-	            }
+				this.refreshTileAndPatch(indexMapy + _bk, indexMapx, destx, vy);
 	        }
 			vy = null;
 		},
@@ -464,38 +434,11 @@ define([
 			var vx;
 	        for (var _ci = 0; _ci < titleWidth; _ci++) {
 	            vx = _ci * this.args.titleW + destx;
-				if (!this.args.map[indexMapy])
-					continue;
-	            var tileid = this.args.map[indexMapy][indexMapx + _ci];
-	            if (tileid != 0) {
-	                tileid = tileid < 0 ? -tileid : tileid;
-					var tile = this.getTile(tileid);;
-					if (tile)
-						this.args.carGp.drawImage($.getImage(tile.imageid), tile.sx, tile.sy, this.args.titleW, this.args.titleH, vx, desty, this.args.titleW, this.args.titleH);
-	            	tile = null;
-				} 
-				else {
-					this.args.carGp.fillStyle = '#000';
-					this.args.carGp.fillRect(vx, desty, this.args.titleW, this.args.titleH);
-	            }
+				this.refreshTileAndPatch(indexMapy, indexMapx + _ci, vx, desty);
 	        }
 	        for (var _ck = titleWidth; _ck < this.args.carTitleWidth; _ck++) {
 	            vx = (_ck - titleWidth) * this.args.titleW;
-				if (!this.args.map[indexMapy])
-					continue;
-	            var tileid =this.args.map[indexMapy][indexMapx + _ck];
-	            if (tileid != 0) {
-	                tileid = tileid < 0 ? -tileid : tileid;
-					var tile = this.getTile(tileid);;
-					if (tile)
-						this.args.carGp.drawImage($.getImage(tile.imageid), tile.sx, tile.sy, this.args.titleW, this.args.titleH, vx, desty, this.args.titleW, this.args.titleH);
-	            	tile = null;
-			    } 
-				else {
-					this.args.carGp.fillStyle = '#000';
-					this.args.carGp.fillRect(vx, desty, this.args.titleW, this.args.titleH);
-	            }
-	            
+				this.refreshTileAndPatch(indexMapy, indexMapx + _ck, vx, desty);
 	        }
 			vx = null
 		},

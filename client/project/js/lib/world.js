@@ -43,7 +43,8 @@ define([
 			bubbleW: 200, //单元气泡的尺寸
 			bubbleH: 100,
 			bubbleFont: '14px Arial',
-			tiles: [], //地砖图形资源数组
+			tiles: [[]], //地砖图形资源数组
+			patchs: {}, //补丁mapping，在地砖上再盖个东西
 			roleId: '', //等待摄影机关联的角色id
 			sortStep: 5, //排序节奏
 			onEvent: null, //场景事件触发回调函数
@@ -103,6 +104,7 @@ define([
 		this._shelters = []; 
 		this._context = $.canvas.getContext(); //前景画布上下文
 		this._tiles = _props.tiles; //地砖图形资源数组
+		this._patchs = _props.patchs; //补丁mapping，在地砖上再盖个东西
 		this.car = null;
 		this.roleId = ''; //等待摄影机关联的角色id
 		this._superStar = null; //摄影机关联上的角色
@@ -749,7 +751,7 @@ define([
 					this.car = _shelter = _eff = null;
 				}
 				//重新初始化卡马克实体类
-				this.car = new carmark(this.width, this.height, this.tw, this.th, this.offsetTileNumber, map, this._tiles);
+				this.car = new carmark(this.width, this.height, this.tw, this.th, this.offsetTileNumber, map, this._tiles, null, this._patchs);
 			}
 			if (aStars)
 				this._aStars = aStars;

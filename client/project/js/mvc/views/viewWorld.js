@@ -27,6 +27,7 @@ define([
 			nodeXStep: _model.nodeXStep,
 			nodeYStep: _model.nodeYStep,
 			tiles: _model.tiles,
+			patchs: {"12_5": 49, "12_6": 50, "13_5": 57, "13_6": 58},
 			callEventTimeout: _model.callEventTimeout, //事件触发间隔时间
 			moveDs: _model.moveDs, //移动时8方向分别对应的动作索引编号集合 0:面朝北, 1:面朝东北 2:面朝东 3:面朝东南 4:面朝南 5:面朝西南 6:面朝西 7:面朝西北 
 			stopDs: _model.stopDs
