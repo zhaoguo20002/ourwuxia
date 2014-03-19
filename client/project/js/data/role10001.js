@@ -1,5 +1,5 @@
 var role10001NameSpace = {};
-require(['lib/link'], function($) {
+define(['lib/link'], function($) {
 	$.asyncImage([
         { id: 'role10001', src: 'img/roles/role10001.png' }
     ]);
@@ -276,4 +276,5 @@ require(['lib/link'], function($) {
         var _role10001_actions = (index >= 0 && role10001_actions[index]) ? [role10001_actions[index]] : role10001_actions;
         return new $.action.role([], 0, 0, 0, names ? names : role10001_imageNames, role10001_rects, role10001_frames, _role10001_actions || role10001_actions);
     }
+	return role10001NameSpace;
 });

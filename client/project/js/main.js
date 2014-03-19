@@ -8,10 +8,6 @@ require.config({
 require([
 	'lib/link',
 	'index',
-	'lib/action',
-	'statics',
-	'global',
-	'notifys/notifyBase',
 	'data/role10001',
 	'data/sceneData'
 ], function($, index) {

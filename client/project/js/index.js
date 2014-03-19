@@ -4,11 +4,10 @@
  */
 define([
 	'lib/link',
-	'statics',
 	'global',
 	'notifys/notifyWorld',
 	'mvc/models/modelWorld'
-], function($, statics, gl, notify, modelWorld) {
+], function($, gl, notify, modelWorld) {
 	return {
 		init: function() {
 			$.init(gl.sys.w, gl.sys.h)
