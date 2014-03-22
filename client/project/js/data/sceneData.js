@@ -269,8 +269,9 @@ define([
 		},
 		//角色精灵对象映射
 		role: {
-			mp1: { getData: function() { return role10001NameSpace.get(); } }, //黑头发，黑衣服，红围巾
-			mp10001: { getData: function() { return role10001NameSpace.get(); } } //黑头发，黑衣服，红围巾
+			mp1: { getData: function() { return man_001NameSpace.get(); } }, //大侠1
+			mp10001: { getData: function() { return man_001NameSpace.get(); } }, //大侠1
+			mp10002: { getData: function() { return man_002NameSpace.get(); } } //大侠2
 		},
 		//NPC精灵对象映射
 		npc: {

@@ -8,7 +8,8 @@ require.config({
 require([
 	'lib/link',
 	'index',
-	'data/role10001',
+	'data/man_001',
+	'data/man_002',
 	'data/sceneData'
 ], function($, index) {
     index.init();
