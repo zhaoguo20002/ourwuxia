@@ -2,8 +2,7 @@
  * @author Suker
  * 贝塞尔曲线路径算法
  */
-//var bezier;
-(function() {
+define(function() {
 	var _args = {
 		/**
 		 * 贝塞尔控制点实体类
@@ -49,7 +48,7 @@
 	 * 贝塞尔曲线
      * @namespace
 	 */
-	bezier = {
+	var bezier = {
 		/**
 		 * 贝塞尔控制点实体类
 		 * @class
@@ -94,4 +93,5 @@
 			return _curve;
 		}
 	};
-})();
+	return bezier;
+});

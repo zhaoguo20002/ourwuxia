@@ -34,7 +34,9 @@ define([
 						modelWorld.entity.touchEnd(offX, offY);
 					}
 				}).swipe(function(startX, startY, offX, offY) {
-					console.error(startX, startY, offX, offY);
+					if (modelWorld.entity) {
+						modelWorld.entity.makeRoleFly(null, offX, offY);
+					}
 				});
 				notify.notify('createWorld');
 			});

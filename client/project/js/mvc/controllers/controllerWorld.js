@@ -58,6 +58,15 @@ define([
 			_model = null;
 			return this;
 		},
+		//角色轻功飞
+		makeRoleFly: function(roleId, offX, offY) {
+			var _model = this.view.model, _getRole = roleId == null ? _model.world.getSuperStar() : _model.world.getRole(roleId);
+			if (_getRole) {
+				_getRole.setPath(statics.createBezier(_getRole.x, _getRole.y, offX, offY));
+			}
+			_model = _getRole = null;
+			return this;
+		},
 		//动画监听器
 		action: function() {
 			var _model = this.view.model;

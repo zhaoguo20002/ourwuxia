@@ -3,8 +3,9 @@
  * 静态方法集合
  */
 define([
-	'lib/link'
-], function($) {
+	'lib/link',
+	'lib/bezier'
+], function($, BZ) {
 	return {
 		//将秒换算后返回
         getTime: function(s) {
@@ -63,5 +64,17 @@ define([
 				return _mapping['mp' + type] || _mapping['mp1'] || _mapping_;
 	        };
 		})(),
+		//创建贝塞尔曲线路径
+		createBezier: function(x1, y1, x2, y2, num) {
+			//距离越远弧度越高
+			var _a = x2 - x1, _b = y2 - y1, _distance = Math.sqrt(Math.pow(_a, 2) + Math.pow(_b, 2)), 
+			_dy = _distance / 50 * 20, //距离越远弧度越高
+			_num = num || _distance / 80 * 8; //距离越远路径越长
+			_num  = _num < 15 ? 15 : _num; //保证最小路径数
+			_num = _num > 30 ? 30 : _num; //保证最大路径数
+			_curX = x1;
+			_curY = y1;
+			return BZ.createPath([new BZ.Point2D(x1, y1), new BZ.Point2D(x1, y1 - _dy), new BZ.Point2D(x2, y2 - _dy), new BZ.Point2D(x2, y2)], _num);
+		}
 	};
 });
