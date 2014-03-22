@@ -29,10 +29,12 @@ define([
 						
 							break;
 					}
-				}).events.mouseDown(function(e, offX, offY) {
+				}).events.mouseUp(function(e, offX, offY) {
 					if (modelWorld.entity) {
-						modelWorld.entity.touchStart(offX, offY);
+						modelWorld.entity.touchEnd(offX, offY);
 					}
+				}).swipe(function(startX, startY, offX, offY) {
+					console.error(startX, startY, offX, offY);
 				});
 				notify.notify('createWorld');
 			});

@@ -8,6 +8,31 @@ define([
 	return $.extend(function(model) {
 		this.model = model;
 		var _model = this.model;
+		//重写初始化文本描述缓冲区
+		World.prototype.initWordsCache = function(role, width, height) {
+			if (role && role.words) {
+				role._wordsDx = -(role.width >> 1) + ((role.width - width) >> 1);
+				role._wordsDy = -(role.height + height + 5);
+				$.canvas.pass(role._passId).clearScreen().font('12px Arial');
+				var _desc = role.words[1], _descW = $.canvas.measureText(_desc), _descX = (width - _descW.width) >> 1, _descY = 25;
+				$.canvas.fillStyle('#000').fillText(_desc, _descX - 1, _descY - 1)
+				.fillText(_desc, _descX + 1, _descY - 1)
+				.fillText(_desc, _descX - 1, _descY + 1)
+				.fillText(_desc, _descX + 1, _descY + 1)
+				.fillStyle('#FF0').fillText(_desc, _descX, _descY);
+				_desc = _descW = _descX = _descY = null;
+				$.canvas.font('14px Arial');
+				var _name = role.words[0], _nameW = $.canvas.measureText(_name), _nameX = (width - _nameW.width) >> 1, _nameY = 43;
+				$.canvas.fillStyle('#000').fillText(_name, _nameX - 1, _nameY - 1)
+				.fillText(_name, _nameX + 1, _nameY - 1)
+				.fillText(_name, _nameX - 1, _nameY + 1)
+				.fillText(_name, _nameX + 1, _nameY + 1)
+				.fillStyle(role.words[2] || '#FFF').fillText(_name, _nameX, _nameY);
+				_name = _nameW = _nameX = _nameY = null;
+				$.canvas.pass();
+			}
+			return this;
+		};
 		_model.world = new World({
 			width: model.width,
 			height: _model.height,

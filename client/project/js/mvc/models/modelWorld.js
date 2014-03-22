@@ -18,8 +18,8 @@ define([
 			sw: 3,
 			sh: 3,
 			wordsNum: 30,
-			wordsW: 174,
-			wordsH: 60,
+			wordsW: 120,
+			wordsH: 50,
 			bubbleNum: 10, //角色说话气泡数量
 			bubbleW: 300, //单元气泡的尺寸
 			bubbleH: 100,

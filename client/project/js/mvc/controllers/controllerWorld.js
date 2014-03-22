@@ -28,8 +28,8 @@ define([
 		updateRoles: function(data) {
 			var _model = this.view.model, _data = data || [];
 			_model.roles = [
-				{ id: 1, name: '主角', desc: '丐帮', spriteId: 10001, x0: 10, y0: 10, action: 0, host: true },
-				{ id: 12, name: '路人甲', desc: '酱油男', spriteId: 10001, x0: 20, y0: 20, action: 0 }
+				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 10, y0: 10, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true },
+				{ id: 12, name: '路人甲', desc: '大侠2', spriteId: 10002, x0: 20, y0: 20, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 }
 			];
 			_model = _data = null;
 			return this;
@@ -38,7 +38,8 @@ define([
 		refreshRoles: function() {
 			var _model = this.view.model;
 			for (var i = 0, role; role = _model.roles[i]; i++) {
-				_model.world.addRole(role.id, statics.getMapping('role', role.spriteId).getData(), [role.name, role.desc, role.host ? '#FFF' : '#0FF', '#000'], role.x0, role.y0, role.action, _model.roleStep, 'role');
+				_model.world.addRole(role.id, statics.getMapping('role', role.spriteId).getData(), [role.name, role.desc, role.host ? '#0FF' : '#FFF', '#000'], role.x0, role.y0, role.action, _model.roleStep, 'role')
+				.setRoleSpeed(role.id, role.speedX, role.speedY);
 				if (role.host) {
 					_model.world.unFocusRole().focusRole(role.id);
 				}
@@ -46,8 +47,8 @@ define([
 			_model = null;
 			return this;
 		},
-		//按下事件监听接口
-		touchStart: function(offX, offY) {
+		//抬起事件监听接口
+		touchEnd: function(offX, offY) {
 			var _model = this.view.model;
 			var getSuperStar = _model.world.getSuperStar();
 			if (getSuperStar) {

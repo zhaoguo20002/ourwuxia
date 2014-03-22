@@ -368,13 +368,37 @@ var link, jsGame;
 			 */
 			pageUnFocusCallBack: null,
 			/**
+			 * 滑动事件回调
+			 */
+			swipeCallBack: null,
+			/**
 			 * 记录松开手时的X坐标
 			 */
 			pageOffX: 0,
 			/**
 			 * 记录松开手时的Y坐标
 			 */
-			pageOffY: 0
+			pageOffY: 0,
+			/**
+			 * 按下时的x坐标
+			 */
+			pageStarOffX: 0,
+			/**
+			 * 按下时的y坐标
+			 */
+			pageStarOffY: 0,
+			/**
+			 * 滑动即时时间戳
+			 */
+			swipeDate: null,
+			/**
+			 * 滑动事件响应时间范围
+			 */
+			swipeTimeout: 200,
+			/**
+			 * 最小拖动范围(宽高,像素)
+			 */
+			swipeRange: 50
 		},
 		/**
 		 * 图形资源相关参数
@@ -666,17 +690,45 @@ var link, jsGame;
 			}
 		},
 		/**
+		 * 滑动开始监听
+		 * @param {number} offX
+		 * @param {number} offY
+		 */
+		swipeStart: function(offX, offY) {
+			if (_args.event.swipeCallBack != null) {
+				_args.event.swipeDate = Date.now();
+				_args.event.pageStarOffX = offX;
+				_args.event.pageStarOffY = offY;
+			}
+		},
+		/**
+		 * 滑动结束判定是否滑动成功
+		 * @param {number} offX
+		 * @param {number} offY
+		 */
+		swipeSuccess: function(offX, offY) {
+			if (_args.event.swipeDate) {
+				if (Date.now() - _args.event.swipeDate < _args.event.swipeTimeout) {
+					if (Math.abs(offX - _args.event.pageStarOffX) >= _args.event.swipeRange || Math.abs(offY - _args.event.pageStarOffY) >= _args.event.swipeRange) {
+						_args.event.swipeCallBack(_args.event.pageStarOffX, _args.event.pageStarOffY, offX, offY);
+						return true;
+					}
+				}
+				_args.event.swipeDate = null;
+			}
+			return false;
+		},
+		/**
 		 * 单点触摸屏幕
 		 * @param {Object} e
 		 */
 		touchstart: function(e) {
-//			if (e.touches.length == 1)
-//			    e.preventDefault();
 			_args.event.pageOffX = _events.getOffsetX(e);
 			_args.event.pageOffY = _events.getOffsetY(e);
 			if (_args.event.touchStart != null) {
 				_args.event.touchStart(e, _args.event.pageOffX, _args.event.pageOffY);
 			}
+			_events.swipeStart(_args.event.pageOffX, _args.event.pageOffY);
 		},
 		/**
 		 * 离开屏幕
@@ -684,6 +736,9 @@ var link, jsGame;
 		 */
 		touchend: function(e) {
 			e.preventDefault();
+			if (_events.swipeSuccess(_args.event.pageOffX, _args.event.pageOffY)) {
+				return false;
+			}
 			if (_args.event.touchEnd != null) {
 				_args.event.touchEnd(e, _args.event.pageOffX, _args.event.pageOffY);
 			}
@@ -693,7 +748,7 @@ var link, jsGame;
 		 * @param {Object} e
 		 */
 		touchmove: function(e) {
-			if (e.touches.length == 1)
+			if (e.touches && e.touches.length == 1)
 				e.preventDefault();
 			_args.event.pageOffX = _events.getOffsetX(e);
 			_args.event.pageOffY = _events.getOffsetY(e);
@@ -726,18 +781,26 @@ var link, jsGame;
 		 * @param {Object} e
 		 */
 		mouseDown: function(e) {
+			var _offX = _events.getOffsetX(e), _offY = _events.getOffsetY(e);
 			if (_args.event.mouseDownCallBack != null) {
-				_args.event.mouseDownCallBack(e, _events.getOffsetX(e), _events.getOffsetY(e));
+				_args.event.mouseDownCallBack(e, _offX, _offY);
 			}
+			_events.swipeStart(_offX, _offY);
+			_offX = _offY = null;
 		},
 		/**
 		 * 鼠标抬起事件
 		 * @param {Object} e
 		 */
 		mouseUp: function(e) {
-			if (_args.event.mouseUpCallBack != null) {
-				_args.event.mouseUpCallBack(e, _events.getOffsetX(e), _events.getOffsetY(e));
+			var _offX = _events.getOffsetX(e), _offY = _events.getOffsetY(e);
+			if (_events.swipeSuccess(_offX, _offY)) {
+				return false;
 			}
+			if (_args.event.mouseUpCallBack != null) {
+				_args.event.mouseUpCallBack(e, _offX, _offY);
+			}
+			_offX = _offY = null;
 		},
 		/**
 		 * 鼠标移动事件
@@ -3506,6 +3569,22 @@ var link, jsGame;
 			pageUnFocus: function(fn) {
 				_args.event.pageUnFocusCallBack = fn;
 				return this;
+			},
+			/**
+			 * 滑动事件
+     		 * @returns {link.events}
+			 * @param {Function} fn
+			 * @param {number} swipeTimeout
+			 * @param {number} swipeRange
+			 */
+			swipe: function(fn, swipeTimeout, swipeRange) {
+				_args.event.swipeCallBack = fn;
+				if (swipeTimeout != null) {
+					_args.event.swipeTimeout = swipeTimeout;
+				}
+				if (swipeRange != null) {
+					_args.event.swipeRange = swipeRange;
+				}
 			},
 			/**
 			 * 将方法链交给link
