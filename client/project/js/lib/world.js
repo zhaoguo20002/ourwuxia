@@ -10,8 +10,9 @@ define([
 	'lib/link', 
 	'lib/carmark', 
 	'lib/astar',
+	'lib/bezier',
 	'lib/action'
-], function($, carmark, astar, action) {
+], function($, carmark, astar, bezier, action) {
 	var _enums = {
 		//碰撞层地砖类型枚举
 		oType: {
@@ -33,6 +34,7 @@ define([
 			sw: 100, //滚屏的宽高速度
 			sh: 100,
 			asyncUrl: '', //A*异步算法代码路径
+			asyncBZUrl: '', //异步贝塞尔曲线算法代码路径
 			offsetTileNumber: 1, //缓冲地砖数
 			nodeXStep: 5,
 			nodeYStep: 5,
@@ -66,6 +68,7 @@ define([
 		this._owNum = Math.ceil(this.width / this.ow); //主角视野里最大地砖列数
 		this._ohNum = Math.ceil(this.height / this.oh); //主角视野里最大地砖行数
 		this._asyncUrl = _props.asyncUrl;
+		this._asyncBZUrl = _props.asyncBZUrl;
 		this.offsetTileNumber = _props.offsetTileNumber;
 		this._nodeXStep = _props.nodeXStep; //粗路径换算细路径时的步长
 		this._nodeYStep = _props.nodeYStep;
@@ -132,6 +135,7 @@ define([
 		this._outScreenH = this.height + this._outScreenWH;
 		this._outScreenX = this.x - (this._outScreenWH >> 1);
 		this._outScreenY = this.y - (this._outScreenWH >> 1);
+		this._flyingRoleObjs = []; //正在飞行的角色对象集合
 		_props = null;
 	}, null, {
 		/**
@@ -626,6 +630,9 @@ define([
 				this._sortStep++;
 				this._sortStep %= this._sortStep_;
 			}
+			
+			this.flyingRoleObjsAction(); //飞行角色监听
+			
 			_car = _shelter = _focusP = _node = null;
 			return this;
 		},
@@ -829,123 +836,6 @@ define([
 			return this;
 		},
 		/**
-		 * 使角色在两点间飞行
-		 * @param {string} id
-		 * @param {number} fromX
-		 * @param {number} fromY
-		 * @param {number} toX
-		 * @param {number} toY
-		 * @param {string} timing
-		 * @param {number} speed
-		 * @param {number} during
-		 */
-		makeRoleFly: function(id, fromX, fromY, toX, toY, timing, speed, during, _skipMoveDs) {
-			var _getRole = this.getRole(id);
-			if (_getRole) {
-				var _fromX = fromX || _getRole.mapOffx, _fromY = fromY || _getRole.mapOffy, 
-				_path = [], _car = this.car;
-				_path = this.getFly(_fromX, _fromY, toX, toY, timing, speed, during);
-				_getRole.mark(_fromX - _car.getMapOffX(), _fromY - _car.getMapOffY(), _fromX, _fromY).setPath(_path, _skipMoveDs);
-				_fromX = _fromY = _path = _car = null;
-			}
-			_getRole = null;
-			return this;
-		},
-		/**
-		 * 换算直线飞行路径
-		 * @param {number} fromX
-		 * @param {number} fromY
-		 * @param {number} toX
-		 * @param {number} toY
-		 * @param {string} timing
-		 * @param {number} speed
-		 * @param {number} during
-		 */
-		getFly: function(fromX, fromY, toX, toY, timing, speed, during) {
-			var _fromX = fromX, _fromY = fromY, 
-			_toX = toX || 0, _toY = toY || 0, 
-			_width = _toX - _fromX, _height = _toY - _fromY, _line = Math.sqrt((_width * _width) + (_height * _height)),
-			_speed = speed || 100, _timing = timing || 'linear', _during = during || 10, stepX, _stepY, 
-			_kx = _width / _line, _ky = _height / _line, //斜率
-			_path = [], _car = this.car, _easePath, _outPath;
-			_stepX = _width;
-			_stepY = _height;
-			while(_line > _speed) {
-				_line -= _speed;
-				_width = (_line * _kx);
-				_stepX -= _width;
-				_height = (_line * _ky);
-				_stepY -= _height;
-				_path.push([_stepX, _stepY]);
-				_stepX = _width;
-				_stepY = _height;
-			}
-			//微调路径
-			if (_line > 0) {
-				_width = (_line * _kx);
-				_stepX = _width;
-				_height = (_line * _ky);
-				_stepY = _height;
-				_path.push([_stepX, _stepY]);
-			}
-			switch (_timing) {
-				case 'linear': //匀速运动
-				default:
-					break;
-				case 'ease-in': //加速运动
-					if (_path.length > 0) {
-						_outPath = _path.shift();
-						_easePath = this.getEasePath(_outPath[0], _outPath[1], _during);
-						while (_easePath.length > 0) {
-							_path.unshift(_easePath.pop());
-						}
-					}
-					break;
-				case 'ease-out': //减速运动
-					if (_path.length > 0) {
-						_outPath = _path.pop();
-						_easePath = this.getEasePath(_outPath[0], _outPath[1], _during);
-						while (_easePath.length > 0) {
-							_path.push(_easePath.shift());
-						}
-					}
-					break;
-				case 'ease': //先加速再减速
-					if (_path.length > 1) {
-						_outPath = _path.shift();
-						_easePath = this.getEasePath(_outPath[0], _outPath[1], _during);
-						while (_easePath.length > 0) {
-							_path.unshift(_easePath.pop());
-						}
-						_outPath = _path.pop();
-						_easePath = this.getEasePath(_outPath[0], _outPath[1], _during);
-						while (_easePath.length > 0) {
-							_path.push(_easePath.shift());
-						}
-					}
-					break;
-			}
-			_fromX = _fromY = _toX = _toY = _width = _height = _line = _speed = _timing = _during = _stepX = _stepY = _kx = _ky = _car = _easePath = _outPath = null;
-			return _path;
-		},
-		/**
-		 * 换算变速路径
-		 * @param {number} stepX
-		 * @param {number} stepY
-		 * @param {number} during
-		 */
-		getEasePath: function(stepX, stepY, during) {
-			var _path = [], _during = during || 10, _curX = stepX, _curY = stepY;
-			while(_during-- > 0) {
-				_curX /= 2;
-				_curY /= 2;
-				_path.push([_curX, _curY]);
-			}
-			_path.push([_curX, _curY]);
-			_during = _curX = _curY = null;
-			return _path;
-		},
-		/**
 		 * 计算A*节点路径，然后利用缓冲算法算最终路径
 		 * @param {string} id
 		 * @param {number} x0
@@ -1021,6 +911,102 @@ define([
 			return _range;
 		},
 		/**
+		 * 计算角色贝塞尔曲线路径
+		 * @param {string} id
+		 * @param {number} x1
+		 * @param {number} y1
+		 * @param {number} cutNum
+		 * @param {number} arcHeight
+		 * @param {number} num
+		 * @param {bool} skipMoveDs
+		 */
+		createBezierPath: function(id, x1, y1, cutNum, arcHeight, num, skipMoveDs) {
+			var _role = this.getRole(id);
+			if (_role) {
+				this.clearPath().beatRole(_role.id, _role.mapOffx, _role.mapOffy);
+				_role.clearPath().nodes = [];
+				_role._cutNum = cutNum || 0; //设置计算结果截取数
+				var _checkIJ = this.checkIJ(x1, y1);
+				x1 = _checkIJ ? _checkIJ[0]: 0;
+				y1 = _checkIJ ? _checkIJ[1]: 0;
+				_checkIJ = null;
+				var _that = this, _sx = _role.x, _sy = _role.y, _ex = ~~this.jToX(y1), _ey = ~~this.iToY(x1),
+				_a = _ex - _sx, _b = _ey - _sy, _distance = Math.sqrt(Math.pow(_a, 2) + Math.pow(_b, 2)), 
+				_dy = _distance / 50 * (arcHeight || 20), //距离越远弧度越高
+				_num = num || _distance / 80 * 8; //距离越远路径越长
+//				_num  = _num < 15 ? 15 : _num; //保证最小路径数
+				_num = _num > 30 ? 30 : _num; //保证最大路径数
+				bezier.callPath(
+					id, 
+					[new bezier.Point2D(_sx, _sy), new bezier.Point2D(_sx, _sy - _dy), new bezier.Point2D(_ex, _ey - _dy), new bezier.Point2D(_ex, _ey)], 
+					_num, 
+					this._asyncBZUrl, 
+					function(data) {
+						var _getRole = _that.getRole(data.id), _path = data.path;
+						if (_getRole) {
+							if (_path.length > _getRole._cutNum) {
+								if (_getRole._cutNum > 0) //从后往前截_cutNum个路径节点
+									_path.splice(_path.length - _getRole._cutNum, _getRole._cutNum);
+							}
+							_that.clearPath().addFlyingRoleObj(_getRole.id); //添加飞行监听
+							_getRole.setPath(_path, data.skipMoveDs).nodes = [];
+							_getRole.jumpTimes++;
+						}					
+						_getRole = _path = null;
+					},
+					'createPath',
+					skipMoveDs
+				);
+				_checkIJ = _sx = _sy = _ex = _ey = _a = _b = _distance = _dy = _num = null;
+			}
+			_role = null;
+			return this;
+		},
+		/**
+		 * 获取飞行角色监听对象
+		 * @param {string} roleId
+		 */
+		getFlyingRoleObj: function(roleId) {
+			return this._flyingRoleObjs[this._flyingRoleObjs.indexOfAttr('roleId', roleId)];
+		},
+		/**
+		 * 添加一个飞行角色监听
+		 * @param {string} roleId
+		 */
+		addFlyingRoleObj: function(roleId) {
+			if (!this.getFlyingRoleObj(roleId)) {
+				this._flyingRoleObjs.push({ 
+					roleId: roleId //角色id
+				});
+				this.setRoleState(roleId, 'jumpTimes', 0);
+			}
+			return this;
+		},
+		/**
+		 * 飞行中的角色监听
+		 * 用于飞行结束后将角色的系统参数进行校正，如x0、y0、动作朝向等
+		 */
+		flyingRoleObjsAction: function() {
+			var _flyingRole, _flyingRoleObj;
+			for (var i = this._flyingRoleObjs.length - 1; i >= 0; i--) {
+				_flyingRoleObj = this._flyingRoleObjs[i];
+				_flyingRole = this.getRole(_flyingRoleObj.roleId);
+				if (_flyingRoleObj && _flyingRole) {
+					if (_flyingRole.endPath()) {
+						this.beatRole(_flyingRole.id, _flyingRole.mapOffx, _flyingRole.mapOffy)
+						.setRoleState(_flyingRole.id, 'jumpTimes', 0)
+						._flyingRoleObjs.splice(i, 1);
+					}
+				}
+				else {
+					this.setRoleState(_flyingRole.id, 'jumpTimes', 0)
+					._flyingRoleObjs.splice(i, 1);
+				}
+			}
+			_flyingRole = _flyingRoleObj = null;
+			return this;
+		},
+		/**
 		 * 校正寻路二维索引
 		 * @param {number} x0
 		 * @param {number} y0
@@ -1070,9 +1056,25 @@ define([
 		 */
 		aim: function(id, offX, offY, sx, sy, ex, ey) {
 			var _getRole = this.getRole(id) || this._superStar || null;
-			if (!_getRole)
+			if (!_getRole || this.getFlyingRoleObj(id))
 				return this;
 			return this.createAstarNodes(_getRole.id, null, null, this.yToI(offY), this.xToJ(offX), 0, sx, sy, ex, ey);
+		},
+		/**
+		 * 使角色跳跃
+		 * @param {string} id
+		 * @param {number} offX
+		 * @param {number} offY
+		 * @param {number} cutNum
+		 * @param {number} arcHeight
+		 * @param {number} num
+		 * @param {bool} skipMoveDs
+		 */
+		jump: function(id, offX, offY, cutNum, arcHeight, num, skipMoveDs) {
+			var _getRole = this.getRole(id) || this._superStar || null;
+			if (!_getRole)
+				return this;
+			return this.createBezierPath(_getRole.id, this.yToI(offY), this.xToJ(offX), cutNum, arcHeight, num, skipMoveDs);
 		},
 		/**
 		 * 检测是否点中场景中的角色、NPC
@@ -1285,6 +1287,7 @@ define([
 				role.setStopDs(this._stopDs);
 				role.setSpeed(this._nodeXStep, this._nodeYStep);
 				role.hided = false; //显示隐藏状态
+				role.jumpTimes = 0;
 				this._roleObjs['_' + id] = role; //映射到角色指针映射集合
 				this._shelters.push(this._roleObjs['_' + id]); //添加到循环迭代列表
 				this.setRole(id, x0, y0, [], cr, step, onstart, onend, x, y);
@@ -1492,9 +1495,13 @@ define([
 		beatRole: function(id, x, y) {
 			var _getRole = this.getRole(id);
 			if (_getRole) {
-				var _car = this.car;
-				_getRole.mark(x - _car.getMapOffX(), y - _car.getMapOffY(), x, y);
-				_car = null;
+				var _car = this.car, _x = x - _car.getMapOffX(), _y = y - _car.getMapOffY();
+				if (_car) {
+					_getRole.mark(_x, _y, x, y);
+					_getRole.x0 = this.yToI(_y);
+					_getRole.y0 = this.xToJ(_x);
+				}
+				_car = _x = _y = null;
 			}
 			_getRole = null;
 			return this;
@@ -1930,6 +1937,48 @@ define([
 		 */
 		yToI: function(y) {
 			return parseInt((y + this.car.getMapOffY()) / this.oh);
+		},
+		/**
+		 * 根据起点坐标和重点坐标获取8方向索引
+		 * @param {number} sx
+		 * @param {number} sy
+		 * @param {number} ex
+		 * @param {number} ey
+		 */
+		getDsIndex: function(sx, sy, ex, ey) {
+			var _sx = sx || 0,
+			_sy = sy || 0,
+			_ex = ex || 0,
+			_ey = ey || 0,
+			_a = _ex - _sx,
+			_b = _ey - _sy,
+			_cut = 30,
+			_rotate = (Math.atan2(_b, _a) / Math.PI * 180);  //角度[90度开始为0度]
+			_rotate = ~~(_rotate >= 0 ? _rotate : _rotate + 360);
+			if (_rotate >= 270 - _cut && _rotate < 270 + _cut) {
+				return 0;
+			}
+			else if (_rotate >= 270 + _cut && _rotate < 360 - _cut) {
+				return 1;
+			}
+			else if (_rotate >= 360 - _cut || _rotate < _cut) {
+				return 2;
+			}
+			else if (_rotate >= _cut && _rotate < 90 - _cut) {
+				return 3;
+			}
+			else if (_rotate >= 90 - _cut && _rotate < 90 + _cut) {
+				return 4;
+			}
+			else if (_rotate >= 90 + _cut && _rotate < 180 - _cut) {
+				return 5;
+			}
+			else if (_rotate >= 180 - _cut && _rotate < 180 + _cut) {
+				return 6;
+			}
+			else if (_rotate >= 180 + _cut && _rotate < 270 - _cut) {
+				return 7;
+			}
 		},
 		/**
 		 * 添加一个场景事件

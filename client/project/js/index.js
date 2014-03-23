@@ -29,13 +29,37 @@ define([
 						
 							break;
 					}
-				}).events.mouseUp(function(e, offX, offY) {
+				})
+				.setKeyCode('a', 65)
+				.setKeyCode('s', 83)
+				.setKeyCode('d', 68)
+				.setKeyCode('jump', 32)
+				.events
+//				.keyDown(function(e) {
+//					console.error(e.keyCode);
+//				})
+				.touchStart(function(e, offX, offY) {
+					if (modelWorld.entity) {
+						modelWorld.entity.touchStart(offX, offY);
+					}
+				})
+				.touchEnd(function(e, offX, offY) {
+					if (modelWorld.entity) {
+						modelWorld.entity.touchEnd(offX, offY);
+					}
+				})
+				.mouseDown(function(e, offX, offY) {
+					if (modelWorld.entity) {
+						modelWorld.entity.touchStart(offX, offY);
+					}
+				})
+				.mouseUp(function(e, offX, offY) {
 					if (modelWorld.entity) {
 						modelWorld.entity.touchEnd(offX, offY);
 					}
 				}).swipe(function(startX, startY, offX, offY) {
 					if (modelWorld.entity) {
-						modelWorld.entity.makeRoleFly(null, offX, offY);
+						modelWorld.entity.jump(offX, offY);
 					}
 				});
 				notify.notify('createWorld');

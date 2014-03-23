@@ -31,7 +31,7 @@ define(['lib/link'], function($) {
 		],
         audios: []
     };
-	var _screenW = 1136, _screenH = 640;
+	var _screenW = 320, _screenH = 480;
 	window.glsysw = window.glsysw > _screenW ? _screenW : window.glsysw;
     // 系统参数
     gl.sys = {

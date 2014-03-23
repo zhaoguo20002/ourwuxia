@@ -85,6 +85,7 @@ define([
 		this._angles = []; //旋转角度变换序列
 		this._moveDs = [4, 7, 5, 5, 6, -5, -5, -7]; //移动时8方向分别对应的动作索引编号集合 0:面朝北, 1:面朝东北 2:面朝东 3:面朝东南 4:面朝南 5:面朝西南 6:面朝西 7:面朝西北 
 		this._stopDs = [0, -3, 1, 1, 2, -1, -1, -3]; //停止时8方向分别对应的动作索引编号集合 索引意义如上
+		this.dsIndex = 4; //方向索引 0:面朝北, 1:面朝东北 2:面朝东 3:面朝东南 4:面朝南 5:面朝西南 6:面朝西 7:面朝西北
 		this._path = [];
 		var _sprite = this.getSprite(), 
 		_frame = _sprite.getFrame(), 
@@ -223,7 +224,7 @@ define([
 				_pathStep = null;
 				//移动时根据速度确定人物正面的朝向动作
 				if (!this._skipMoveDs) {
-					this.setSprite(this._moveDs[_returnDIndex(_vx, _vy)], true);
+					this.setSprite(this._moveDs[this.dsIndex = _returnDIndex(_vx, _vy)], true);
 				}
 				this.svx = _vx;
 				this.svy = _vy;
@@ -234,7 +235,7 @@ define([
 			else if (this.svx != null && this.svy != null) {
 				//停止时根据前一帧的速度确定人物正面的朝向动作
 				if (!this._skipMoveDs) {
-					this.setSprite(this._stopedAction || this._stopDs[_returnDIndex(this.svx, this.svy)]);
+					this.setSprite(this._stopedAction || this._stopDs[this.dsIndex = _returnDIndex(this.svx, this.svy)]);
 					this._stopedAction = null;
 				}
 				if (this.onend) { //停止后回调
@@ -615,6 +616,28 @@ define([
 	 */
 	$.action.Role.prototype.setStopDs = function(stopDs) {
 		this._stopDs = stopDs || [0, -3, 1, 1, 2, -1, -1, -3];
+		return this;
+	};
+	/**
+	 * 执行移动动作
+	 * @param {number} index
+	 */
+	$.action.Role.prototype.doMoveDs = function(index) {
+		if (index != null && index >= 0 && index < 8) {
+			this.dsIndex = index;
+		}
+		this.setSprite(this._moveDs[this.dsIndex]);
+		return this;
+	};
+	/**
+	 * 执行停止动作
+	 * @param {number} index
+	 */
+	$.action.Role.prototype.doStopDs = function(index) {
+		if (index != null && index >= 0 && index < 8) {
+			this.dsIndex = index;
+		}
+		this.setSprite(this._stopDs[this.dsIndex]);
 		return this;
 	};
 	/**

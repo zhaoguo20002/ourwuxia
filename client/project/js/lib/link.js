@@ -2532,7 +2532,7 @@ var link, jsGame;
 			 */
 			drawRotate: function(id, sx, sy, sWidth, sHeight, x, y, width, height, rot) {
 				var _hw = parseInt(width >> 1), _hh = parseInt(height >> 1), 
-				_getImage = _that.getImage(id), _image = _getImage ? _getImage : _args.canvas.cavansDoms[id];
+				_getImage = _that.getImage(id), _image = _getImage.src ? _getImage : _args.canvas.cavansDoms[id];
 				x -= _hw; //换算中心店坐标
 				y -= _hh;
 				_ctx.save();

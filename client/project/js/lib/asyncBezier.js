@@ -1,8 +1,9 @@
 /**
  * @author Suker
- * 贝塞尔曲线路径算法
+ * 贝塞尔曲线路径算法异步模式支持
+ * 这个插件必须给予WebWorker使用
  */
-define(function() {
+(function() {
 	var _args = {
 		/**
 		 * 贝塞尔控制点实体类
@@ -42,21 +43,7 @@ define(function() {
 		    result.x = (ax * tCubed) + (bx * tSquared) + (cx * t) + cp[0].x;  
 		    result.y = (ay * tCubed) + (by * tSquared) + (cy * t) + cp[0].y;  
 		    return result; 
-		}
-	};
-	
-	/**
-	 * 贝塞尔曲线
-     * @namespace
-	 */
-	var bezier = {
-		/**
-		 * 贝塞尔控制点实体类
-		 * @class
-		 * @param {number} x
-		 * @param {number} y
-		 */
-		Point2D: _args.Point2D,
+		},
 		/**
 		 * 创建贝塞尔曲线节点路径
      	 * @returns {array}
@@ -92,61 +79,23 @@ define(function() {
 				}
 			}
 			return _curve;
-		},
-		/**
-		 * 异步回调方式计算创建贝塞尔曲线移动路径
-     	 * @returns {bezier}
-		 * @param {array} cp
-		 * @param {number} pointNum
-		 * @param {string} asyncUrl
-		 * @param {Function} callBack
-		 * @param {string} type
-		 */
-		callPath: (function() {
-			var _worker = null, _callBack, _async = false;
-			return function(id, cp, pointNum, asyncUrl, callBack, type, skipMoveDs) {
-				_callBack = callBack;
-				if (!_worker) { //初始化，决定在特定浏览器内采用同步还是异步模式
-					if (asyncUrl != '' && window.Worker) {
-						try {
-							_worker = new Worker(asyncUrl);
-							_worker.addEventListener('message', function(e) {
-								if (_callBack) {
-									_callBack(e.data);
-									_callBack = null;
-								}
-							});
-							_async = true;
-						}
-						catch (e) {
-							_async = false;
-						}
-					}
-					else {
-						_async = false;
-					}
-				}
-				//同步、异步两种模式请求路径的方法不一样
-				var _param = { id: id, cp: cp, pointNum: pointNum, type: type || 'createPath', skipMoveDs: skipMoveDs };
-				if (_async) { //异步使用WebWorker
-					_worker.postMessage(_param);
-				}
-				else { //同步直接使用实体类
-					if (_callBack) {
-						if (_param.type == 'create') {
-							_param.path = this.create(cp, pointNum);
-						}
-						else if (_param.type == 'createPath') {
-							_param.path = this.createPath(cp, pointNum);
-						}
-						_callBack(_param);
-						_callBack = null;
-					}
-				}
-				_param = null;
-				return this;
-			};
-		})()
+		}
 	};
-	return bezier;
-});
+	addEventListener('message', function(e) {
+		var _data = e.data, 
+		_cp = _data.cp, 
+		_pointNum = _data.pointNum, 
+		_type = _data.type;
+		if (_type == 'create') {
+			_data.path = _args.create(_cp, _pointNum);
+		}
+		else if (_type == 'createPath') {
+			_data.path = _args.createPath(_cp, _pointNum);
+		}
+		else {
+			_data.path = [];
+		}
+		postMessage(_data);
+		_data = _cp = _pointNum = _type = null;
+	}, true);
+})();

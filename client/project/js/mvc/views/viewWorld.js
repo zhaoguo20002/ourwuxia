@@ -51,6 +51,7 @@ define([
 			asyncUrl: _model.asyncUrl,
 			nodeXStep: _model.nodeXStep,
 			nodeYStep: _model.nodeYStep,
+			offsetTileNumber: _model.offsetTileNumber,
 			tiles: _model.tiles,
 			patchs: {"12_5": 49, "12_6": 50, "13_5": 57, "13_6": 58},
 			callEventTimeout: _model.callEventTimeout, //事件触发间隔时间
@@ -59,6 +60,33 @@ define([
 		});
 		_model = null;
 	}, null, {
-		
+		//索敌渲染
+		lockEnemyRender: function() {
+			var _model = this.model, _getSuperStar = _model.world.getSuperStar();
+			if (_getSuperStar && !_getSuperStar.endPath()) {
+				$.canvas.strokeStyle('rgba(255, 0, 0, 0.5)')
+				.beginPath()
+				.arc(_getSuperStar.x, _getSuperStar.y, _model.lockEnemyRadius, 0, 2 * Math.PI)
+				.closePath()
+				.lineWidth(5)
+				.stroke();
+			}
+			if (_model.lockedRole) {
+				$.canvas.drawString('当前锁定角色:' + _model.lockedRole.words[0], 50, 50, '', true, '#ff0', '#000');
+			}
+			_model = _getSuperStar= null;
+			return this;
+		},
+		//测试按钮渲染
+		testBtnsRender: function() {
+			var _model = this.model;
+			for (var i = 0, btn; btn = _model.testBtns[i]; i++) {
+				$.canvas
+				.fillStyle('#000').fillRect(btn.x, btn.y, btn.width, btn.height)
+				.fillStyle('#FFF').font(_model.font).fillText(btn.value, btn.x + ((btn.width - $.canvas.measureText(btn.value).width) >> 1), btn.y + 24);
+			}
+			_model = null;
+			return this;
+		}
 	});
 });

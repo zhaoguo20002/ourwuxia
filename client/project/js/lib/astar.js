@@ -156,7 +156,7 @@ define([
 					_as = new Worker(_props.asyncUrl);
 					_as.addEventListener('message', function(e) {
 						if (_callBack) {
-							_callBack(e.data)
+							_callBack(e.data);
 						}
 					});
 					_async = true;

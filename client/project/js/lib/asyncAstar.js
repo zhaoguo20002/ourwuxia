@@ -2,8 +2,6 @@
  * @author Suker
  * A*算法的异步模式支持
  * 这个插件必须给予WebWorker使用
- * 用于jsGame.BraveWorld视图类中处理多线程寻路算法逻辑
- * 是jsGame.Astar.callPath中内部实现需要用到的算法插件
  */
 (function() {
 	var Astar = function(map) {
