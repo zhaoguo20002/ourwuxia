@@ -10,9 +10,9 @@ define([
 		this.view = view;
 		var _ctrl = this, _model = _ctrl.view.model;
 		_model.testBtns = [
-			{ x: 10, y: gl.sys.top + gl.sys.h - 50, width: 80, height: 40, value: '攻击(A)', click: function() { _ctrl.attack(); } },
-			{ x: 100, y: gl.sys.top + gl.sys.h - 50, width: 80, height: 40, value: '突(S)', click: function() { _ctrl.sprint(); } },
-			{ x: 190, y: gl.sys.top + gl.sys.h - 50, width: 80, height: 40, value: '撤(D)', click: function() { _ctrl.flee(); } }
+			{ x: 10, y: gl.sys.top + gl.sys.h - 70, width: 80, height: 40, value: '攻击(A)', click: function() { _ctrl.attack(); } },
+			{ x: 100, y: gl.sys.top + gl.sys.h - 70, width: 80, height: 40, value: '突(S)', click: function() { _ctrl.sprint(); } },
+			{ x: 190, y: gl.sys.top + gl.sys.h - 70, width: 80, height: 40, value: '撤(D)', click: function() { _ctrl.flee(); } }
 		];
 	}, null, {
 		//更新场景数据
@@ -48,7 +48,9 @@ define([
 				_model.world.addRole(role.id, statics.getMapping('role', role.spriteId).getData(), [role.name, role.desc, role.host ? '#0FF' : '#FFF', '#000'], role.x0, role.y0, role.action, _model.roleStep, 'role')
 				.setRoleSpeed(role.id, role.speedX, role.speedY);
 				if (role.host) {
-					_model.world.unFocusRole().focusRole(role.id);
+					_model.world.setCameraSpeed(_model.tw, _model.th)
+					.unFocusRole().focusRole(role.id)
+					.setCameraSpeed(_model.sw, _model.sh);
 				}
 			}
 			_model = null;
@@ -128,7 +130,7 @@ define([
 			if (_getSuperStar && _model.lockedRole) {
 				_getSuperStar.setStep(1).setMoveDs(_model.fleeDs).setStopDs(_model.fleeEndDs);
 				var _dX = _getSuperStar.x - (_model.lockedRole.x - _getSuperStar.x >= 0 ? 200 : -200), _dY = _getSuperStar.y - (_model.lockedRole.y - _getSuperStar.y >= 0 ? 200 : -200);
-				_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, _dX, _dY, 0, 1, 5);
+				_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, _dX, _dY, 0, null, 15);
 				_dX = _dY = null;
 			}
 			_model = _getSuperStar = null;
