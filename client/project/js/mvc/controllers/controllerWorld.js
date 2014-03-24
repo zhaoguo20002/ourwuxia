@@ -120,7 +120,7 @@ define([
 			var _model = this.view.model, _getSuperStar = _model.world.getSuperStar();
 			if (_getSuperStar && _model.lockedRole) {
 				_getSuperStar.setStep(1).setMoveDs(_model.sprintDs).setStopDs(_model.stopDs);
-				_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, _model.lockedRole.x, _model.lockedRole.y, 1, 1, 15);
+				_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, _model.lockedRole.x, _model.lockedRole.y, 0, 1, 5);
 			}
 			_model = _getSuperStar = null;
 			return this;
