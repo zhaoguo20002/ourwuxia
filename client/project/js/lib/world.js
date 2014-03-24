@@ -923,8 +923,7 @@ define([
 		createBezierPath: function(id, x1, y1, cutNum, arcHeight, num, skipMoveDs) {
 			var _role = this.getRole(id);
 			if (_role) {
-				this.clearPath().beatRole(_role.id, _role.mapOffx, _role.mapOffy);
-				_role.clearPath().nodes = [];
+				this.beatRole(_role.id, _role.mapOffx, _role.mapOffy);
 				_role._cutNum = cutNum || 0; //设置计算结果截取数
 				var _checkIJ = this.checkIJ(x1, y1);
 				x1 = _checkIJ ? _checkIJ[0]: 0;
@@ -994,13 +993,13 @@ define([
 				if (_flyingRoleObj && _flyingRole) {
 					if (_flyingRole.endPath()) {
 						this.beatRole(_flyingRole.id, _flyingRole.mapOffx, _flyingRole.mapOffy)
-						.setRoleState(_flyingRole.id, 'jumpTimes', 0)
-						._flyingRoleObjs.splice(i, 1);
+						.setRoleState(_flyingRole.id, 'jumpTimes', 0);
+						this._flyingRoleObjs.splice(i, 1);
 					}
 				}
 				else {
-					this.setRoleState(_flyingRole.id, 'jumpTimes', 0)
-					._flyingRoleObjs.splice(i, 1);
+					this.setRoleState(_flyingRole.id, 'jumpTimes', 0);
+					this._flyingRoleObjs.splice(i, 1);
 				}
 			}
 			_flyingRole = _flyingRoleObj = null;
@@ -1497,9 +1496,9 @@ define([
 			if (_getRole) {
 				var _car = this.car, _x = x - _car.getMapOffX(), _y = y - _car.getMapOffY();
 				if (_car) {
-					_getRole.mark(_x, _y, x, y);
 					_getRole.x0 = this.yToI(_y);
 					_getRole.y0 = this.xToJ(_x);
+					_getRole.mark(this.jToX(_getRole.y0), this.iToY(_getRole.x0), x, y);
 				}
 				_car = _x = _y = null;
 			}

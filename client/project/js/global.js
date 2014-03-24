@@ -31,16 +31,14 @@ define(['lib/link'], function($) {
 		],
         audios: []
     };
-	var _screenW = 320, _screenH = 480;
+	var _screenW = 1136, _screenH = 640;
 	window.glsysw = window.glsysw > _screenW ? _screenW : window.glsysw;
     // 系统参数
     gl.sys = {
 		innerWidth: window.innerWidth, // 初始浏览器窗口宽度
         // 屏幕大小
-//		w: $.canvas.screen.getTouch() ? (window.glsysw || 1136) : (window.innerWidth > _screenW ? _screenW : window.innerWidth),
-//		h: $.canvas.screen.getTouch() ? 640 : (window.innerHeight > _screenH ? _screenH : window.innerHeight),
-		w: _screenW,
-		h: _screenH,
+		w: $.canvas.screen.getTouch() ? 320 : (window.innerWidth > _screenW ? _screenW : window.innerWidth),
+		h: $.canvas.screen.getTouch() ? 480 : (window.innerHeight > _screenH ? _screenH : window.innerHeight),
         // canvas画布的offset偏移量
         left: 0,
         top: 0,
