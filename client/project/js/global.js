@@ -37,8 +37,8 @@ define(['lib/link'], function($) {
     gl.sys = {
 		innerWidth: window.innerWidth, // 初始浏览器窗口宽度
         // 屏幕大小
-		w: $.canvas.screen.getTouch() ? 320 : (window.innerWidth > _screenW ? _screenW : window.innerWidth),
-		h: $.canvas.screen.getTouch() ? 480 : (window.innerHeight > _screenH ? _screenH : window.innerHeight),
+		w: $.canvas.screen.getTouch() ? window.innerWidth : (window.innerWidth > _screenW ? _screenW : window.innerWidth),
+		h: $.canvas.screen.getTouch() ? window.innerHeight : (window.innerHeight > _screenH ? _screenH : window.innerHeight),
         // canvas画布的offset偏移量
         left: 0,
         top: 0,
