@@ -110,7 +110,7 @@ define([
 		attack: function() {
 			var _model = this.view.model, _getSuperStar = _model.world.getSuperStar();
 			if (_getSuperStar && _model.lockedRole) {
-				_getSuperStar.setSprite(1).setStep(_model.roleStep).setSprite(_model.attacks1Ds[_model.world.getDsIndex(_getSuperStar.x, _getSuperStar.y, _model.lockedRole.x, _model.lockedRole.y)])
+				_getSuperStar.setSprite(1).setStep(_model.roleStep).setSprite(_model.attacks1Ds[_model.world.getDsIndex(_getSuperStar.x, _getSuperStar.y, _model.lockedRole.x, _model.lockedRole.y)]);
 			}
 			_model = _getSuperStar = null;
 			return this;
@@ -149,7 +149,7 @@ define([
 						}
 					}
 				}
-				_getShelters = _shelter = null
+				_getShelters = _shelter = null;
 			}
 			this.view.lockEnemyRender();
 			_model = _getSuperStar= null;

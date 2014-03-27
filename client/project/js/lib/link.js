@@ -5,7 +5,24 @@
  */
 var link, jsGame;
 (function() {
-	var _linkEval = window.eval;
+	var _linkEval = window.eval, 
+	_extend = function(subClass, superClass, methods) {
+        var _methods = methods || {};
+        if (superClass) {
+            var _f = function() {};
+            _f.prototype = superClass.prototype;
+            subClass.prototype = new _f();
+            subClass.prototype.constructor = subClass;
+            subClass.prototype.superClass = superClass.prototype;
+            _f = null;
+        }
+        //扩展原型链
+        for (var key in _methods) {
+           subClass.prototype[key] = _methods[key]; 
+        }
+        _methods = null;
+        return subClass;
+    };
 	//重写eval
 	//window.eval = function(str) {};
 	//重写requestAnimationFrame
@@ -47,7 +64,7 @@ var link, jsGame;
             }
             re = null;
             return str;
-        }
+        };
     if (!String.getByteLength) {
         /**
          * 精确换算字符串和数字、英文字母的长度
@@ -447,16 +464,6 @@ var link, jsGame;
 			audios: {}
 		},
 		/**
-		 * 资源相关参数
-		 */
-		resource: {
-			/**
-			 * 资源加载队列
-			 */
-			queue: []
-			
-		},
-		/**
 		 * ajax调用机制相关参数
 		 */
 		ajax: {
@@ -506,10 +513,32 @@ var link, jsGame;
 			gets: []
 		},
 		/**
-		 * 计时器相关参数集合
+		 * 按钮布局相关参数
 		 */
-		timer: {
-			lockIds: {} //计时器id占位集合
+		buttonLayout: {
+		    /**
+		     * 按钮集合 
+		     */
+		    buttons: [],
+		    /**
+		     * 按钮实体类 
+             * @param {string} id
+             * @param {object} obj
+		     */
+		    Button: _extend(function(id, obj) {
+		        this.id = id;
+                this._type = 0; //0普通文字、1图片、2动画角色精灵
+                this._path = []; //动画路径
+            }, null, {
+                action: function() {
+                    
+                    return this;
+                },
+                render: function() {
+                    
+                    return this;
+                }
+            })
 		}
 	};
 	
@@ -1064,11 +1093,35 @@ var link, jsGame;
 		pageLoaded: function() {
 			_args.image.inited = true; //同步资源加载完毕
 			_args.system.pageLoad(_that);
+		},
+		/**
+		 * 按钮布局监听器 
+		 */
+		buttonLayoutAction: function(offX, offY) {
+		    var _buttons = _args.buttonLayout.buttons, _button;
+            for (var i = _buttons.length - 1; i >= 0; i--) {
+                if (_button = _buttons[i]) {
+                    _button.action(offX, offY);
+                }
+            }
+            _buttons = _button = null;
+		},
+		/**
+		 * 按钮布局渲染器 
+		 */
+		buttonLayoutRender: function() {
+		    var _buttons = _args.buttonLayout.buttons, _button;
+		    for (var i = _buttons.length - 1; i >= 0; i--) {
+		        if (_button = _buttons[i]) {
+		            _button.render();
+		        }
+		    }
+		    _buttons = _button = null;
 		}
 	};
 	
 	var _ctx, _drawImageArgs, _setColorArgs, _strokeRectArgs, _fillRectArgs, _drawStringArgs, _canvasDom, _deviceInfo, 
-	_currentW, _currentH, _getArrayArgs = { arr: [], len: 0, v: 0 }
+	_currentW, _currentH, _getArrayArgs = { arr: [], len: 0, v: 0 };
 	/** @namespace */
 	link = {
 		/**
@@ -1097,23 +1150,7 @@ var link, jsGame;
 		 * @param {object} superClass
 		 * @param {object} methods
 		 */
-		extend: function(subClass, superClass, methods) {
-			var _methods = methods || {};
-            if (superClass) {
-                var _f = function() {};
-                _f.prototype = superClass.prototype;
-    			subClass.prototype = new _f();
-    			subClass.prototype.constructor = subClass;
-				subClass.prototype.superClass = superClass.prototype;
-                _f = null;
-            }
-            //扩展原型链
-            for (var key in _methods) {
-               subClass.prototype[key] = _methods[key]; 
-            }
-			_methods = null;
-			return subClass;
-        },
+		extend: _extend,
 		/**
 		 * 设置ajax默认参数
      	 * @returns {link}
@@ -1536,12 +1573,12 @@ var link, jsGame;
 				try {
 					_ls = window.localStorage;
 					if (!_ls.getItem)
-						_ls.getItem = function() { return null };
+						_ls.getItem = function() { return null; };
 					if (!_ls.setItem)
 						_ls.setItem = function() { };
 				}
 				catch(e1) {
-					_ls = { getItem: function() { return null }, setItem: function() { } };
+					_ls = { getItem: function() { return null; }, setItem: function() { } };
 				}
 				return _ls;
 			};
@@ -1632,12 +1669,12 @@ var link, jsGame;
 				try {
 					_ss = window.sessionStorage;
 					if (!_ss.getItem)
-						_ss.getItem = function() { return null };
+						_ss.getItem = function() { return null; };
 					if (!_ss.setItem)
 						_ss.setItem = function() { };
 				}
 				catch(e1) {
-					_ss = { getItem: function() { return null }, setItem: function() { } };
+					_ss = { getItem: function() { return null; }, setItem: function() { } };
 				}
 				return _ss;
 			};
@@ -2348,7 +2385,7 @@ var link, jsGame;
 			fillText: function(text, x, y, font) {
 				_ctx.font = font || _args.canvas.defaultFont;
 				_ctx.fillText(text, x, y);
-				return this
+				return this;
 			},
 			/**
 			 * 清除矩形
@@ -2639,7 +2676,7 @@ var link, jsGame;
 		        _drawMethod(imageid, sx, sy, sw, sh, 0, 0, sw, sh);
 		        _ctx.setTransform(1, 0, 0, 1, 0, 0); //重置坐标系
 				_drawMethod = null;
-				_image = null
+				_image = null;
 				return this;
 		    },
 		    /**
@@ -2689,7 +2726,7 @@ var link, jsGame;
 		        _drawMethod(imageid, sx, sy, sw, sh, 0, 0, w, h);
 		        _ctx.setTransform(1, 0, 0, 1, 0, 0); //重置坐标系
 				_drawMethod = null;
-				_image = null
+				_image = null;
 				return this;
 		    },
 			/**
@@ -3701,6 +3738,76 @@ var link, jsGame;
 			get: function(key) {
 				return _args.request.gets[key] ? _args.request.gets[key] : '';
 			}
+		},
+        /**
+         * 处理建议按钮交互接口
+         * @namespace
+         */
+		buttonLayout: {
+		    /**
+		     *添加一个 点击对象
+             * @returns {link.buttonLayout}
+             * @param {string} id
+             * @param {object} obj
+		     */
+		    create: function(id, obj) {
+		        
+		        return this;
+		    },
+		    /**
+		     * 移除一个点击对象
+             * @returns {link.buttonLayout}
+             * @param {string} id
+		     */
+		    destroy: function(id) {
+		        
+		        return this;
+		    },
+            /**
+             * 显示点击对象
+             * @returns {link.buttonLayout}
+             * @param {string} id
+             */
+		    show: function(id) {
+		        
+		        return this;
+		    },
+            /**
+             * 隐藏点击对象
+             * @returns {link.buttonLayout}
+             * @param {string} id
+             */
+            hide: function(id) {
+                
+                return this;
+            },
+            /**
+             * 点击对象是否被按住
+             * @returns {bool}
+             * @param {string} id
+             */
+            repeated: function(id) {
+                
+                return false;
+            },
+            /**
+             * 点击对象是否被按下
+             * @returns {bool}
+             * @param {string} id
+             */
+            pressed: function(id) {
+                
+                return false;
+            },
+            /**
+             * 点击对象是否被松开
+             * @returns {bool}
+             * @param {string} id
+             */
+            released: function(id) {
+                
+                return false;
+            }
 		}
 		
 	}.init();
@@ -3911,7 +4018,7 @@ var link, jsGame;
 		this.socket.onmessage = onMessage;
 		this.socket.onclose = onClose;
 		this.socket.onerror = onError;
-	}
+	};
 	/**
 	 * WebSocket发送消息方法
 	 * @param {object|string} data
