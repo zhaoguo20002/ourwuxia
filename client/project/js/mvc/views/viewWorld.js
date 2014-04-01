@@ -76,17 +76,6 @@ define([
 			}
 			_model = _getSuperStar= null;
 			return this;
-		},
-		//测试按钮渲染
-		testBtnsRender: function() {
-			var _model = this.model;
-			for (var i = 0, btn; btn = _model.testBtns[i]; i++) {
-				$.canvas
-				.fillStyle('#000').fillRect(btn.x, btn.y, btn.width, btn.height)
-				.fillStyle('#FFF').font(_model.font).fillText(btn.value, btn.x + ((btn.width - $.canvas.measureText(btn.value).width) >> 1), btn.y + 24);
-			}
-			_model = null;
-			return this;
 		}
 	});
 });

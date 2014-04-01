@@ -137,8 +137,7 @@ define([
 			sceneId: 0, //场景id
 			roles: [],
 			lockEnemyRadius: 100, //索敌半径
-			lockedRole: null, //当前锁住的角色
-			testBtns: []
+			lockedRole: null //当前锁住的角色
 		},
 		entity: null
 	};

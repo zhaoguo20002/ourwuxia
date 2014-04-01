@@ -9,11 +9,10 @@ define([
 	return $.extend(function(view) {
 		this.view = view;
 		var _ctrl = this, _model = _ctrl.view.model;
-		_model.testBtns = [
-			{ x: 10, y: gl.sys.top + gl.sys.h - 70, width: 80, height: 40, value: '攻击(A)', click: function() { _ctrl.attack(); } },
-			{ x: 100, y: gl.sys.top + gl.sys.h - 70, width: 80, height: 40, value: '突(S)', click: function() { _ctrl.sprint(); } },
-			{ x: 190, y: gl.sys.top + gl.sys.h - 70, width: 80, height: 40, value: '撤(D)', click: function() { _ctrl.flee(); } }
-		];
+		 $.buttonLayout.create({ id: 'attackBtn', x: gl.sys.w - 300, y : gl.sys.h - 50, width: 80, height: 40, value: '攻击(A)' })
+         .create({ id: 'rushBtn', x: gl.sys.w - 200, y : gl.sys.h - 50, width: 80, height: 40, value: '突(S)' })
+         .create({ id: 'retreatBtn', x: gl.sys.w - 100, y : gl.sys.h - 50, width: 80, height: 40, value: '撤(D)' });
+         
 	}, null, {
 		//更新场景数据
 		updateScene: function(data) {
@@ -38,7 +37,7 @@ define([
 				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 10, y0: 10, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true },
 				{ id: 12, name: '路人甲', desc: '大侠2', spriteId: 10002, x0: 12, y0: 12, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 }
 			];
-			for (var i = 0; i < 100; i++) {
+			for (var i = 0; i < 200; i++) {
 			    _model.roles.push({ id: 'test' + i, name: '测试' + i, desc: '大侠' + i, spriteId: 10002, x0: $.comm.getRandom(0, 60), y0: $.comm.getRandom(0, 60), speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 });
 			}
 			_model = _data = null;
@@ -62,18 +61,12 @@ define([
 		//按下事件监听接口
 		touchStart: function(offX, offY) {
 			var _model = this.view.model;
-			if (this.testBtnsEvent(offX, offY)) {
-				return this;
-			}
 			_model = null;
 			return this;
 		},
 		//抬起事件监听接口
 		touchEnd: function(offX, offY) {
 			var _model = this.view.model;
-			if (this.testBtnsEvent(offX, offY, true)) {
-				return this;
-			}
 			var getSuperStar = _model.world.getSuperStar();
 			if (getSuperStar) {
 				getSuperStar.setStep(_model.roleStep).setMoveDs(_model.moveDs).setStopDs(_model.stopDs);
@@ -158,19 +151,6 @@ define([
 			_model = _getSuperStar= null;
 			return this;
 		},
-		//测试按钮事件监听
-		testBtnsEvent: function(offX, offY, notDoClick) {
-			var _model = this.view.model;
-			for (var i = 0, btn; btn = _model.testBtns[i]; i++) {
-				if ($.comm.collision(btn.x, btn.y, btn.width, btn.height, offX - 10, offY - 10, 20, 20)) {
-					if (!notDoClick && btn.click) {
-						btn.click();
-					}
-					return true;
-				}
-			}
-			return false;
-		},
 		//动画监听器
 		action: function() {
 			var _model = this.view.model;
@@ -178,15 +158,14 @@ define([
 				_model.world.action().render();
 				
 				this.lockEnemyAction(); //索敌监听
-				this.view.testBtnsRender();
 				
-				if ($.keyPressed('a')) {
+				if ($.buttonLayout.pressed('attackBtn')) {
 					this.attack();
 				}
-				if ($.keyPressed('s')) {
+				if ($.buttonLayout.pressed('rushBtn')) {
 					this.sprint();
 				}
-				if ($.keyPressed('d')) {
+				if ($.buttonLayout.pressed('retreatBtn')) {
 					this.flee();
 				}
 			}

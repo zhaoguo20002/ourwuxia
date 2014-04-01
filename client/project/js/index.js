@@ -18,8 +18,6 @@ define([
 				console.error(loaded, count);
 			})
 			.main(function() {
-			    $.buttonLayout.create({ id: 'xxx', x: 50, y: 300, width: 100, height: 60, font: '20px 微软雅黑', value: '按钮1' })
-			    .create({ id: 'xxx2', x: 200, y: 300, width: 100, height: 60, font: '20px 微软雅黑', value: '按钮2' });
 				$.active(function(args) {
 				    var dt1 = new Date();
 					switch (args.to) {
@@ -32,9 +30,6 @@ define([
 						
 							break;
 					}
-					$.canvas.fillStyle('#000').fillText($.buttonLayout.repeated('xxx') + ',' + $.buttonLayout.pressed('xxx') + ',' + $.buttonLayout.released('xxx'), 50, 80)
-					.fillText($.buttonLayout.repeated('xxx2') + ',' + $.buttonLayout.pressed('xxx2') + ',' + $.buttonLayout.released('xxx2'), 50, 100);
-				    
 				    dt = parseInt(1000 / ((new Date() - dt1) + 1));
                     $.canvas.drawString('角色数:' + (modelWorld.args.world ? modelWorld.args.world.getShelters().length : 0) + ' FPS: ' + dt, 35, 130, '', true, '#FF0000', '#FFFFFF', '20px 宋体');
                     $.canvas.strokeStyle('#FF6699')
