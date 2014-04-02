@@ -1287,6 +1287,7 @@ define([
 				role.setSpeed(this._nodeXStep, this._nodeYStep);
 				role.hided = false; //显示隐藏状态
 				role.jumpTimes = 0;
+				role.jumpDistance = 100; //跳跃距离
 				this._roleObjs['_' + id] = role; //映射到角色指针映射集合
 				this._shelters.push(this._roleObjs['_' + id]); //添加到循环迭代列表
 				this.setRole(id, x0, y0, [], cr, step, onstart, onend, x, y);

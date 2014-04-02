@@ -66,7 +66,8 @@ define([
 					}
 				}).swipe(function(startX, startY, offX, offY) {
 					if (modelWorld.entity) {
-						modelWorld.entity.jump(offX, offY);
+					    //主角轻功跳跃
+						modelWorld.entity.fly(startX, startY, offX, offY);
 					}
 				});
 				notify.notify('createWorld');

@@ -9,10 +9,8 @@ define([
 	return $.extend(function(view) {
 		this.view = view;
 		var _ctrl = this, _model = _ctrl.view.model;
-		 $.buttonLayout.create({ id: 'attackBtn', x: gl.sys.w - 300, y : gl.sys.h - 50, width: 80, height: 40, value: '攻击(A)' })
-         .create({ id: 'rushBtn', x: gl.sys.w - 200, y : gl.sys.h - 50, width: 80, height: 40, value: '突(S)' })
-         .create({ id: 'retreatBtn', x: gl.sys.w - 100, y : gl.sys.h - 50, width: 80, height: 40, value: '撤(D)' });
-         
+		
+         this.createAcctackingUI();
 	}, null, {
 		//更新场景数据
 		updateScene: function(data) {
@@ -95,8 +93,7 @@ define([
 							break;
 					}
 					_getSuperStar.setStep(1).setStopDs(_model.stopDs);
-//					_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, offX, offY, 0, null, 15);
-					_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, offX, offY);
+					_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, offX, offY, 0, null, 30);
 				}
 			}
 			_model = _getSuperStar = null;
@@ -133,6 +130,24 @@ define([
 			_model = _getSuperStar = null;
 			return this;
 		},
+		//主角轻功飞
+		fly: function(startX, startY, offX, offY) {
+		    //计算划过屏幕的距离，算出角色应该移动的距离
+		    var _model = this.view.model, _getSuperStar = _model.world.getSuperStar();
+		    if (_getSuperStar) {
+		        var _a = offX - startX,
+                _b = offY - startY,
+                _c = Math.sqrt(Math.pow(_a, 2) + Math.pow(_b, 2)), //圆半径
+                _rotate = (Math.atan2(_b, _a) / Math.PI * 180), _r, _px, _py;  //角度[90度开始为0度]
+                _rotate = _rotate >= 0 ? _rotate : _rotate + 360;
+                _r = _c > _getSuperStar.jumpDistance ? _getSuperStar.jumpDistance : _c; //限制跳跃距离
+                _px = _r * Math.cos(_rotate / 180 * Math.PI);
+                _py = _r * Math.sin(_rotate / 180 * Math.PI);
+                this.jump(_getSuperStar.mapOffx + _px, _getSuperStar.mapOffy + _py);
+		    }
+		    _model = _getSuperStar = null;
+		    return this;
+		},
 		//索敌监听
 		lockEnemyAction: function() {
 			var _model = this.view.model, _getSuperStar = _model.world.getSuperStar();
@@ -151,23 +166,74 @@ define([
 			_model = _getSuperStar= null;
 			return this;
 		},
+		//创建战斗UI
+		createAcctackingUI: function() {
+		    var _model = this.view.model;
+		    //初始化战斗UI
+            $.buttonLayout.create({ id: 'attackBtn', x: gl.sys.w - 310, y : gl.sys.h, path: $.comm.createPath(gl.sys.w - 310, gl.sys.h, gl.sys.w - 310, gl.sys.h - 50, _model.UIPathStep), width: 80, height: 40, value: '攻击(A)' })
+            .create({ id: 'rushBtn', x: gl.sys.w - 220, y : gl.sys.h, path: $.comm.createPath(gl.sys.w - 220, gl.sys.h, gl.sys.w - 220, gl.sys.h - 50, _model.UIPathStep), width: 80, height: 40, value: '突(S)' })
+            .create({ id: 'retreatBtn', x: gl.sys.w - 130, y : gl.sys.h, path: $.comm.createPath(gl.sys.w - 130, gl.sys.h, gl.sys.w - 130, gl.sys.h - 50, _model.UIPathStep), width: 80, height: 40, value: '撤(D)' })
+            .create({ id: 'changeUIBtn', x: gl.sys.w - 45, y : gl.sys.h, path: $.comm.createPath(gl.sys.w - 45, gl.sys.h, gl.sys.w - 45, gl.sys.h - 50, _model.UIPathStep), width: 40, height: 40, value: '换(C)' });
+		    _model = null;
+		    return this;
+		},
+        //清除战斗UI
+        clearAcctackingUI: function() {
+            var _model = this.view.model;
+            $.buttonLayout.gone('attackBtn', $.comm.createPath(gl.sys.w - 310, gl.sys.h - 50, gl.sys.w - 310, gl.sys.h, _model.UIPathStep))
+            .gone('rushBtn', $.comm.createPath(gl.sys.w - 220, gl.sys.h - 50, gl.sys.w - 220, gl.sys.h, _model.UIPathStep))
+            .gone('retreatBtn', $.comm.createPath(gl.sys.w - 130, gl.sys.h - 50, gl.sys.w - 130, gl.sys.h, _model.UIPathStep));
+            _model = null;
+            return this;
+        },
+		//创建非战斗UI
+		createPeaceUI: function() {
+            var _model = this.view.model;
+		    $.buttonLayout.create({ id: 'stateBtn', x: gl.sys.w - 310, y : gl.sys.h, path: $.comm.createPath(gl.sys.w - 310, gl.sys.h, gl.sys.w - 310, gl.sys.h - 50, _model.UIPathStep), width: 80, height: 40, value: '属性' })
+            .create({ id: 'bagBtn', x: gl.sys.w - 220, y : gl.sys.h, path: $.comm.createPath(gl.sys.w - 220, gl.sys.h, gl.sys.w - 220, gl.sys.h - 50, _model.UIPathStep), width: 80, height: 40, value: '背包' })
+            .create({ id: 'skillBtn', x: gl.sys.w - 130, y : gl.sys.h, path: $.comm.createPath(gl.sys.w - 130, gl.sys.h, gl.sys.w - 130, gl.sys.h - 50, _model.UIPathStep), width: 80, height: 40, value: '武功' });
+            _model = null;
+		    return this;
+		},
+        //清除非战斗UI
+        clearPeaceUI: function() {
+            var _model = this.view.model;
+            $.buttonLayout.gone('stateBtn', $.comm.createPath(gl.sys.w - 310, gl.sys.h - 50, gl.sys.w - 310, gl.sys.h, _model.UIPathStep))
+            .gone('bagBtn', $.comm.createPath(gl.sys.w - 220, gl.sys.h - 50, gl.sys.w - 220, gl.sys.h, _model.UIPathStep))
+            .gone('skillBtn', $.comm.createPath(gl.sys.w - 130, gl.sys.h - 50, gl.sys.w - 130, gl.sys.h, _model.UIPathStep));
+            _model = null;
+            return this;
+        },
+		//UI事件监听器
+		UIAction: function() {
+		    if ($.buttonLayout.pressed('attackBtn')) {
+                this.attack();
+            }
+            if ($.buttonLayout.pressed('rushBtn')) {
+                this.sprint();
+            }
+            if ($.buttonLayout.pressed('retreatBtn')) {
+                this.flee();
+            }
+            if ($.buttonLayout.pressed('changeUIBtn')) {
+                if ($.buttonLayout.get('attackBtn')) {
+                    this.clearAcctackingUI().createPeaceUI();
+                }
+                else {
+                    this.clearPeaceUI().createAcctackingUI();
+                }
+            }
+		    return this;
+		},
 		//动画监听器
 		action: function() {
 			var _model = this.view.model;
 			if (_model.world) {
 				_model.world.action().render();
 				
-				this.lockEnemyAction(); //索敌监听
+				this.lockEnemyAction() //索敌监听
+				.UIAction(); //UI事件监听
 				
-				if ($.buttonLayout.pressed('attackBtn')) {
-					this.attack();
-				}
-				if ($.buttonLayout.pressed('rushBtn')) {
-					this.sprint();
-				}
-				if ($.buttonLayout.pressed('retreatBtn')) {
-					this.flee();
-				}
 			}
 			_model = null;
 			return this;

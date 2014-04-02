@@ -552,6 +552,7 @@ var link, jsGame;
                 this.repeated = false;
                 this.pressed = false;
                 this.released = false;
+                this.goned = false; //标记是否即将飘走
                 this.cacheId = 'buttonLayoutCache_' + this.id;
                 this.refresh();
             }, null, {
@@ -614,10 +615,30 @@ var link, jsGame;
                     this.disabled = disabled;
                     return this;
                 },
+                //设置路径
+                setPath: function(path) {
+                    this.path = path || [];
+                    return this;
+                },
+                //是否停止
+                endPath: function() {
+                    return this.path.length == 0;
+                },
+                //使按钮即将飘走
+                gone: function(path) {
+                    this.setPath(path).goned = true;
+                    return this;
+                },
                 //监听器
                 action: function() {
                     if (this.hided) {
                         return this;
+                    }
+                    if (this.path.length > 0) {
+                        var _node = this.path.shift();
+                        this.x += _node[0];
+                        this.y += _node[1];
+                        _node = null;
                     }
                     return this;
                 },
@@ -1214,6 +1235,9 @@ var link, jsGame;
             for (var i = _buttons.length - 1; i >= 0; i--) {
                 if (_button = _buttons[i]) {
                     _button.action().render();
+                    if (_button.goned && _button.endPath()) {
+                        _buttons.splice(i, 1);
+                    }
                 }
             }
             _buttons = _button = null;
@@ -3958,6 +3982,22 @@ var link, jsGame;
                     }
                 }
                 _buttons = _button = null;
+		        return this;
+		    },
+		    /**
+		     *  使点击对象飘走[停止移动后删除]
+             * @returns {link.buttonLayout}
+             * @param {string} id
+             * @param {array} path
+		     */
+		    gone: function(id, path) {
+		        var _button = this.get(id);
+                if (_button) {
+                    var _path = path || [];
+                    _button.gone(_path);
+                    _path = null;
+                }
+                _button = null; 
 		        return this;
 		    },
 		    /**
