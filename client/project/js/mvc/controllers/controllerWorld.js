@@ -32,7 +32,7 @@ define([
 		updateRoles: function(data) {
 			var _model = this.view.model, _data = data || [];
 			_model.roles = [
-				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 10, y0: 10, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true },
+				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 10, y0: 10, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true, jumpDistance: 300 },
 				{ id: 12, name: '路人甲', desc: '大侠2', spriteId: 10002, x0: 12, y0: 12, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 }
 			];
 			for (var i = 0; i < 200; i++) {
@@ -46,7 +46,8 @@ define([
 			var _model = this.view.model;
 			for (var i = 0, role; role = _model.roles[i]; i++) {
 				_model.world.addRole(role.id, statics.getMapping('role', role.spriteId).getData(), [role.name, role.desc, role.host ? '#0FF' : '#FFF', '#000'], role.x0, role.y0, role.action, _model.roleStep, 'role')
-				.setRoleSpeed(role.id, role.speedX, role.speedY);
+				.setRoleSpeed(role.id, role.speedX, role.speedY)
+				.setRoleState(role.id, 'jumpDistance', role.jumpDistance);
 				if (role.host) {
 					_model.world.setCameraSpeed(_model.tw, _model.th)
 					.unFocusRole().focusRole(role.id)
@@ -93,7 +94,7 @@ define([
 							break;
 					}
 					_getSuperStar.setStep(1).setStopDs(_model.stopDs);
-					_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, offX, offY, 0, null, 30);
+					_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, offX, offY);
 				}
 			}
 			_model = _getSuperStar = null;
@@ -138,12 +139,28 @@ define([
 		        var _a = offX - startX,
                 _b = offY - startY,
                 _c = Math.sqrt(Math.pow(_a, 2) + Math.pow(_b, 2)), //圆半径
-                _rotate = (Math.atan2(_b, _a) / Math.PI * 180), _r, _px, _py;  //角度[90度开始为0度]
-                _rotate = _rotate >= 0 ? _rotate : _rotate + 360;
-                _r = _c > _getSuperStar.jumpDistance ? _getSuperStar.jumpDistance : _c; //限制跳跃距离
+                _rotate = (Math.atan2(_b, _a) / Math.PI * 180), _r, _px, _py, _jumpDistancs; 
+                _rotate = _rotate >= 0 ? _rotate : _rotate + 360; //角度[90度开始为0度]
+				//获取分段条的距离
+				switch (_getSuperStar.jumpTimes) {
+					case 0: //1段跳距离
+					default:
+						_jumpDistancs = _getSuperStar.jumpDistance || 100;
+						_r = _c > _jumpDistancs ? _jumpDistancs : _c; //限制跳跃距离
+						break;
+					case 1: //2段跳距离
+						_jumpDistancs = _getSuperStar.jumpDistance * 1.5 || 200;
+						_r = _jumpDistancs; //固定跳跃距离
+						break;
+					case 2: //3段跳距离
+						_jumpDistancs = _getSuperStar.jumpDistance * 2 || 400;
+						_r = _jumpDistancs; //固定跳跃距离
+						break;
+				}
                 _px = _r * Math.cos(_rotate / 180 * Math.PI);
                 _py = _r * Math.sin(_rotate / 180 * Math.PI);
-                this.jump(_getSuperStar.mapOffx + _px, _getSuperStar.mapOffy + _py);
+                this.jump(_getSuperStar.x + _px, _getSuperStar.y + _py);
+				_a = _b = _c = _rotate = _px = _py = _jumpDistancs = null;
 		    }
 		    _model = _getSuperStar = null;
 		    return this;
