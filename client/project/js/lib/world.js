@@ -923,7 +923,7 @@ define([
 		createBezierPath: function(id, x1, y1, cutNum, arcHeight, num, skipMoveDs) {
 			var _role = this.getRole(id);
 			if (_role) {
-				this.beatRole(_role.id, _role.mapOffx, _role.mapOffy);
+				// this.beatRole(_role.id, _role.mapOffx, _role.mapOffy);
 				_role._cutNum = cutNum || 0; //设置计算结果截取数
 				var _checkIJ = this.checkIJ(x1, y1);
 				x1 = _checkIJ ? _checkIJ[0]: 0;
@@ -946,17 +946,19 @@ define([
 					id: id, 
 					cp: [new bezier.Point2D(_sx, _sy), new bezier.Point2D(_sx, _sy - _dy), new bezier.Point2D(_ex, _ey - _dy), new bezier.Point2D(_ex, _ey)], 
 					pointNum: _num, 
-					asyncBZUrl: this._asyncBZUrl, 
+					asyncUrl: this._asyncBZUrl, 
 					callBack:function(data) {
 						var _getRole = _that.getRole(data.id), _path = data.path;
 						if (_getRole) {
-							if (_path.length > _getRole._cutNum) {
-								if (_getRole._cutNum > 0) //从后往前截_cutNum个路径节点
-									_path.splice(_path.length - _getRole._cutNum, _getRole._cutNum);
-							}
-							_that.clearPath().addFlyingRoleObj(_getRole.id); //添加飞行监听
-							_getRole.setPath(_path, data.skipMoveDs).nodes = [];
-							_getRole.jumpTimes++;
+						    if (_path) {
+						        if (_path.length > _getRole._cutNum) {
+                                    if (_getRole._cutNum > 0) //从后往前截_cutNum个路径节点
+                                        _path.splice(_path.length - _getRole._cutNum, _getRole._cutNum);
+                                }
+                                _that.clearPath().addFlyingRoleObj(_getRole.id); //添加飞行监听
+                                _getRole.setPath(_path, data.skipMoveDs).nodes = [];
+                                _getRole.jumpTimes++;
+						    }
 						}					
 						_getRole = _path = null;
 					},
@@ -966,7 +968,8 @@ define([
 					mapOffX: _car.getMapOffX(),
                     mapOffY: _car.getMapOffY(),
                     ow: this.ow,
-                    oh: this.oh
+                    oh: this.oh,
+                    jumpTimes: _role.jumpTimes
 				});
 				_checkIJ = _sx = _sy = _ex = _ey = _a = _b = _distance = _dy = _num = _car = null;
 			}

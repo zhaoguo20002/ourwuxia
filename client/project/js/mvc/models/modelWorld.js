@@ -119,6 +119,7 @@ define([
 			bubbleW: 300, //单元气泡的尺寸
 			bubbleH: 100,
 			asyncUrl: 'js/lib/asyncAstar.js',
+			asyncBZUrl: 'js/lib/asyncBezier.js',
 			nodeXStep: 4,
 			nodeYStep: 4,
 			offsetTileNumber: 2,

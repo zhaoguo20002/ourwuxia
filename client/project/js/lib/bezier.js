@@ -105,8 +105,9 @@ define([
          * @param {number} mapOffY
          * @param {number} ow
          * @param {number} oh
+         * @param {jumpTimes} oh
 		 */
-		createMapPath: function(cp, pointNum, map, mapOffX, mapOffY, ow, oh) {
+		createMapPath: function(cp, pointNum, map, mapOffX, mapOffY, ow, oh, jumpTimes) {
 		    var dt, i, _curve = [], 
             _pointNum = pointNum || 10,
             dt = 1.0 / ( _pointNum - 1 ), _cp = cp || [], _point, _curX = _cp[0].x, _curY = _cp[0].y, 
@@ -134,9 +135,15 @@ define([
             _nodes = null;
             //如果中途有障碍物那么用上面算出的非障碍点重新计算路径
             if (_getI != null && _getJ != null) {
-                _cp[3].x = _getJ * _ow + (_ow >> 1) - _mapOffX;
-                _cp[3].y = _getI * _oh + (_oh >> 1) - _mapOffY;
-                return this.createPath(_cp, pointNum);
+                //如果第一跳的话处理往回飞的路径
+                if (jumpTimes == 0) {
+                    _cp[3].x = _getJ * _ow + (_ow >> 1) - _mapOffX;
+                    _cp[3].y = _getI * _oh + (_oh >> 1) - _mapOffY;
+                    return this.createPath(_cp, pointNum);
+                }
+                else { //如果是多段跳的途中变向，目的地又出现是障碍点的情况则不处理路径
+                    return null;
+                }
             }
             else {
                 return _curve;
@@ -162,7 +169,8 @@ define([
 			        mapOffX: 0,
 			        mapOffY: 0,
 			        ow: 32,
-			        oh: 32
+			        oh: 32,
+			        jumpTimes: 0
 			    }, param || {});
 				_callBack = _props.callBack;
 				if (!_worker) { //初始化，决定在特定浏览器内采用同步还是异步模式
@@ -186,8 +194,7 @@ define([
 					}
 				}
 				//同步、异步两种模式请求路径的方法不一样
-				var _param = { id: _props.id, cp: _props.cp, pointNum: _props.pointNum, type: _props.type, skipMoveDs: _props.skipMoveDs };
-				_async = false;
+				var _param = { id: _props.id, cp: _props.cp, pointNum: _props.pointNum, type: _props.type, skipMoveDs: _props.skipMoveDs, map: _props.map, mapOffX: _props.mapOffX, mapOffY: _props.mapOffY, ow: _props.ow, oh: _props.oh, jumpTimes: _props.jumpTimes };
 				if (_async) { //异步使用WebWorker
 					_worker.postMessage(_param);
 				}
@@ -200,7 +207,10 @@ define([
 							_param.path = this.createPath(_props.cp, _props.pointNum);
 						}
                         else if (_param.type == 'createMapPath') {
-                            _param.path = this.createMapPath(_props.cp, _props.pointNum, _props.map, _props.mapOffX, _props.mapOffY, _props.ow, _props.oh);
+                            _param.path = this.createMapPath(_props.cp, _props.pointNum, _props.map, _props.mapOffX, _props.mapOffY, _props.ow, _props.oh, _props.jumpTimes);
+                        }
+                        else {
+                            _param.path = [];
                         }
 						_callBack(_param);
 						_callBack = null;

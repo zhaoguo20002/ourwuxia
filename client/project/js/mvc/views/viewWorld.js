@@ -49,6 +49,7 @@ define([
 			bubbleW: _model.bubbleW, //单元气泡的尺寸
 			bubbleH: _model.bubbleH,
 			asyncUrl: _model.asyncUrl,
+			asyncBZUrl: _model.asyncBZUrl,
 			nodeXStep: _model.nodeXStep,
 			nodeYStep: _model.nodeYStep,
 			offsetTileNumber: _model.offsetTileNumber,
