@@ -2,7 +2,9 @@
  * @author Suker
  * 贝塞尔曲线路径算法
  */
-define(function() {
+define([
+    'lib/link'
+], function($) {
 	var _args = {
 		/**
 		 * 贝塞尔控制点实体类
@@ -85,8 +87,8 @@ define(function() {
 		    for( i = 0; i < _pointNum; i++) { 
 				//第一个点不需要处理
 				_point = _args.pointOnCubicBezier(_cp, i * dt);
+		        _curve.push([_point.x - _curX, _point.y - _curY]); 
 				if (i > 0) {
-			        _curve.push([_point.x - _curX, _point.y - _curY]); 
 					_curX = _point.x;
 					_curY = _point.y;
 				}
@@ -94,22 +96,79 @@ define(function() {
 			return _curve;
 		},
 		/**
+		 * 创建世界地图中贝塞尔曲线移动路径[考虑障碍物]
+         * @returns {array}
+         * @param {array} cp
+         * @param {number} pointNum
+         * @param {array} map
+         * @param {number} mapOffX
+         * @param {number} mapOffY
+         * @param {number} ow
+         * @param {number} oh
+		 */
+		createMapPath: function(cp, pointNum, map, mapOffX, mapOffY, ow, oh) {
+		    var dt, i, _curve = [], 
+            _pointNum = pointNum || 10,
+            dt = 1.0 / ( _pointNum - 1 ), _cp = cp || [], _point, _curX = _cp[0].x, _curY = _cp[0].y, 
+            _nodes = [], _map = map || [[]], _mapOffX = mapOffX || 0, _mapOffY = mapOffY || 0, _ow = ow || 32, _oh = oh || 32;  
+            for( i = 0; i < _pointNum; i++) { 
+                //第一个点不需要处理
+                _point = _args.pointOnCubicBezier(_cp, i * dt);
+                _nodes.push(_point);
+                _curve.push([_point.x - _curX, _point.y - _curY]); 
+                if (i > 0) {
+                    _curX = _point.x;
+                    _curY = _point.y;
+                }
+            }
+            //检测路径的最后一个点是否是非障碍点，如果是则移除，知道找到最后一个路径是非障碍点
+            var _getI = null, _getJ = null; 
+            while (_nodes[_nodes.length - 1] && _map[~~((_nodes[_nodes.length - 1].y + _mapOffY) / _oh)] && !_map[~~((_nodes[_nodes.length - 1].y + _mapOffY) / _oh)][~~((_nodes[_nodes.length - 1].x + _mapOffX) / _ow)]) {
+                _nodes.pop();
+                _curve.pop();
+                if (_nodes[_nodes.length - 1]) {
+                    _getI = ~~((_nodes[_nodes.length - 1].y + _mapOffY) / _oh);
+                    _getJ = ~~((_nodes[_nodes.length - 1].x + _mapOffX) / _ow);
+                }
+            }
+            _nodes = null;
+            //如果中途有障碍物那么用上面算出的非障碍点重新计算路径
+            if (_getI != null && _getJ != null) {
+                _cp[3].x = _getJ * _ow + (_ow >> 1) - _mapOffX;
+                _cp[3].y = _getI * _oh + (_oh >> 1) - _mapOffY;
+                return this.createPath(_cp, pointNum);
+            }
+            else {
+                return _curve;
+            }
+		},
+		/**
 		 * 异步回调方式计算创建贝塞尔曲线移动路径
      	 * @returns {bezier}
-		 * @param {array} cp
-		 * @param {number} pointNum
-		 * @param {string} asyncUrl
-		 * @param {Function} callBack
-		 * @param {string} type
+		 * @param {object} param
 		 */
 		callPath: (function() {
 			var _worker = null, _callBack, _async = false;
-			return function(id, cp, pointNum, asyncUrl, callBack, type, skipMoveDs) {
-				_callBack = callBack;
+			return function(param) {
+			    var _props = $.objExtend({
+			        id: [],
+			        cp: [],
+			        pointNum: 10,
+			        asyncUrl: '',
+			        callBack: null,
+			        type: 'createPath',
+			        skipMoveDs: false,
+			        map: [[]],
+			        mapOffX: 0,
+			        mapOffY: 0,
+			        ow: 32,
+			        oh: 32
+			    }, param || {});
+				_callBack = _props.callBack;
 				if (!_worker) { //初始化，决定在特定浏览器内采用同步还是异步模式
-					if (asyncUrl != '' && window.Worker) {
+					if (_props.asyncUrl != '' && window.Worker) {
 						try {
-							_worker = new Worker(asyncUrl);
+							_worker = new Worker(_props.asyncUrl);
 							_worker.addEventListener('message', function(e) {
 								if (_callBack) {
 									_callBack(e.data);
@@ -127,23 +186,27 @@ define(function() {
 					}
 				}
 				//同步、异步两种模式请求路径的方法不一样
-				var _param = { id: id, cp: cp, pointNum: pointNum, type: type || 'createPath', skipMoveDs: skipMoveDs };
+				var _param = { id: _props.id, cp: _props.cp, pointNum: _props.pointNum, type: _props.type, skipMoveDs: _props.skipMoveDs };
+				_async = false;
 				if (_async) { //异步使用WebWorker
 					_worker.postMessage(_param);
 				}
 				else { //同步直接使用实体类
 					if (_callBack) {
 						if (_param.type == 'create') {
-							_param.path = this.create(cp, pointNum);
+							_param.path = this.create(_props.cp, _props.pointNum);
 						}
 						else if (_param.type == 'createPath') {
-							_param.path = this.createPath(cp, pointNum);
+							_param.path = this.createPath(_props.cp, _props.pointNum);
 						}
+                        else if (_param.type == 'createMapPath') {
+                            _param.path = this.createMapPath(_props.cp, _props.pointNum, _props.map, _props.mapOffX, _props.mapOffY, _props.ow, _props.oh);
+                        }
 						_callBack(_param);
 						_callBack = null;
 					}
 				}
-				_param = null;
+				_props = _param = null;
 				return this;
 			};
 		})()

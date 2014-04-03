@@ -440,7 +440,7 @@ define([
 	            vx = (_ck - titleWidth) * this.args.titleW;
 				this.refreshTileAndPatch(indexMapy, indexMapx + _ck, vx, desty);
 	        }
-			vx = null
+			vx = null;
 		},
 		/**
 		 * 绘制一个区
@@ -466,6 +466,6 @@ define([
         	g.drawImage(img, x_src, y_src, width, height, x_dest, y_dest, width, height);
 		}
 	});
-	return $.Carmark
+	return $.Carmark;
 	
 });

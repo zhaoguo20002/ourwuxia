@@ -180,12 +180,12 @@ define([
 			if (_callBack) {
 				_as.map = _props.map;
 				_param.path = _as.getPath(_props.x0, _props.y0, _props.x1, _props.y1, _props.sx, _props.sy, _props.ex, _props.ey);
-				_callBack(_param)
+				_callBack(_param);
 			}
 		}
 		_props = _param = null;
 		return $.Astar;
 	};
-	return $.Astar
+	return $.Astar;
 	
 });

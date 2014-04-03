@@ -143,7 +143,7 @@ define([
 		}
 		_cr = trans = _sprite = _frame = _frameAll = null;
 		return this;
-	}
+	};
 	/**
 	 * 添加一个关联角色
 	 * @returns {link.active.Role}

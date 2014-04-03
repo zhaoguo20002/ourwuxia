@@ -192,7 +192,7 @@ define([
 				for (var i = this._wordsList.length - 1; i >= 0; i--) {
 					_wordsObj = this._wordsList[i];
 					if (_wordsObj && !_wordsObj.outScreen) {
-						$.canvas.drawCache(_wordsObj._passId, parseInt(_wordsObj.x + _wordsObj._wordsDx), parseInt(_wordsObj.y + _wordsObj._wordsDy));
+						$.canvas.drawCache(_wordsObj._passId, ~~(_wordsObj.x + _wordsObj._wordsDx), ~~(_wordsObj.y + _wordsObj._wordsDy));
 					}
 				}
 				_wordsObj = null;
@@ -206,7 +206,7 @@ define([
 							this.removeRoleBubbleByIndex(i);
 						}
 						else {
-							$.canvas.drawCache(bb.passId, parseInt(bb.role.x + bb.dx), parseInt(bb.role.y + bb.dy));
+							$.canvas.drawCache(bb.passId, ~~(bb.role.x + bb.dx), ~~(bb.role.y + bb.dy));
 						}
 					}
 				}
@@ -255,7 +255,7 @@ define([
 		loadingBarRender: function(loadingBar) {
 			var _role = loadingBar.role;
 			if (_role && !_role.outScreen) {
-				var _per = loadingBar.curMs / loadingBar.ms, _pstr = parseInt(100 - _per * 100) + '%', _barH = parseInt(loadingBar.font);
+				var _per = loadingBar.curMs / loadingBar.ms, _pstr = ~~(100 - _per * 100) + '%', _barH = ~~(loadingBar.font);
 				$.canvas.fillStyle('#CCC').fillRect(_role.x - 60, _role.y + loadingBar.dy + 5, 120, _barH + 4)
 				.fillStyle('#0F0').fillRect(_role.x - 60, _role.y + loadingBar.dy + 5, 120 - 120 * _per, _barH + 4)
 				.drawString(_pstr, _role.x - ($.canvas.font(loadingBar.font).measureText(_pstr).width >> 1), _role.y + loadingBar.dy + 5 + _barH, '', true, loadingBar.color, loadingBar.stroke, loadingBar.font)
@@ -379,16 +379,16 @@ define([
 					$.canvas.fillStyle('rgba(0, 0, 0, 0.2)');
 					//动作帧区域
 					for (var j = 0; j < _len; j++) {
-						$.canvas.fillRect(parseInt(_shelter.x + _fa[j][2] * _shelter.zoom), parseInt(_shelter.y + _fa[j][3] * _shelter.zoom), _shelter.rects[_fa[j][0]][_fa[j][1]][2] * _shelter.zoom, _shelter.rects[_fa[j][0]][_fa[j][1]][3] * _shelter.zoom);
+						$.canvas.fillRect(~~(_shelter.x + _fa[j][2] * _shelter.zoom), ~~(_shelter.y + _fa[j][3] * _shelter.zoom), _shelter.rects[_fa[j][0]][_fa[j][1]][2] * _shelter.zoom, _shelter.rects[_fa[j][0]][_fa[j][1]][3] * _shelter.zoom);
 					}
 					//身体碰撞区域
 					$.canvas.fillStyle('rgba(0, 255, 255, 0.5)').fillRect(
-						_shelter.getSprite().trans == $.trans.TRANS_NONE ? parseInt((_shelter.x + _shelter.dx + _shelter.bR[0] * _shelter.zoom)) : parseInt((_shelter.x + _shelter.dx - (_shelter.bR[0] + _shelter.bR[2]) * _shelter.zoom)),
+						_shelter.getSprite().trans == $.trans.TRANS_NONE ? ~~((_shelter.x + _shelter.dx + _shelter.bR[0] * _shelter.zoom)) : ~~((_shelter.x + _shelter.dx - (_shelter.bR[0] + _shelter.bR[2]) * _shelter.zoom)),
 						_shelter.y + _shelter.dy + _shelter.bR[1] * _shelter.zoom, _shelter.bR[2] * _shelter.zoom, _shelter.bR[3] * _shelter.zoom
 					)
 					//攻击碰撞区域
 					.fillStyle('rgba(255, 0, 255, 0.5)').fillRect(
-					_shelter.getSprite().trans == $.trans.TRANS_NONE ? parseInt((_shelter.x + _shelter.dx + _shelter.aR[0] * _shelter.zoom)) : parseInt((_shelter.x + _shelter.dx - (_shelter.aR[0] + _shelter.aR[2]) * _shelter.zoom)), 
+					_shelter.getSprite().trans == $.trans.TRANS_NONE ? ~~((_shelter.x + _shelter.dx + _shelter.aR[0] * _shelter.zoom)) : ~~((_shelter.x + _shelter.dx - (_shelter.aR[0] + _shelter.aR[2]) * _shelter.zoom)), 
 					_shelter.y + _shelter.dy + _shelter.aR[1] * _shelter.zoom, _shelter.aR[2] * _shelter.zoom, _shelter.aR[3] * _shelter.zoom);
 					_fa = _len = null;
 				}
@@ -901,8 +901,8 @@ define([
 		 */
 		getPathRange: function() {
 			var _range = [0, 0, 0, 0], _car = this.car, 
-			_startX0 = parseInt(_car.getMapOffY() / this.oh), //可视界面左上角最边界的起始地砖索引
-			_startY0 = parseInt(_car.getMapOffX() / this.ow);
+			_startX0 = ~~(_car.getMapOffY() / this.oh), //可视界面左上角最边界的起始地砖索引
+			_startY0 = ~~(_car.getMapOffX() / this.ow);
 			_range[0] = _startX0;
 			_range[1] = _startY0;
 			_range[2] = _startX0 + this._ohNum - 1; //可视界面右下角最边界目标地砖索引
@@ -932,15 +932,22 @@ define([
 				var _that = this, _sx = _role.x, _sy = _role.y, _ex = ~~this.jToX(y1), _ey = ~~this.iToY(x1),
 				_a = _ex - _sx, _b = _ey - _sy, _distance = Math.sqrt(Math.pow(_a, 2) + Math.pow(_b, 2)), 
 				_dy = _distance / 50 * (arcHeight || 20), //距离越远弧度越高
-				_num = num || _distance / 80 * 8; //距离越远路径越长
-//				_num  = _num < 15 ? 15 : _num; //保证最小路径数
-				_num = _num > 30 ? 30 : _num; //保证最大路径数
-				bezier.callPath(
-					id, 
-					[new bezier.Point2D(_sx, _sy), new bezier.Point2D(_sx, _sy - _dy), new bezier.Point2D(_ex, _ey - _dy), new bezier.Point2D(_ex, _ey)], 
-					_num, 
-					this._asyncBZUrl, 
-					function(data) {
+				_num;
+				if (!num) { //默认情况下
+				    _num = _distance / 80 * 8; //距离越远路径越长
+    				_num  = _num < 15 ? 15 : _num; //保证最小路径数
+    				_num = _num > 30 ? 30 : _num; //保证最大路径数
+				}
+				else {
+				    _num = num;
+				}
+				var _car = this.car;
+				bezier.callPath({
+					id: id, 
+					cp: [new bezier.Point2D(_sx, _sy), new bezier.Point2D(_sx, _sy - _dy), new bezier.Point2D(_ex, _ey - _dy), new bezier.Point2D(_ex, _ey)], 
+					pointNum: _num, 
+					asyncBZUrl: this._asyncBZUrl, 
+					callBack:function(data) {
 						var _getRole = _that.getRole(data.id), _path = data.path;
 						if (_getRole) {
 							if (_path.length > _getRole._cutNum) {
@@ -953,10 +960,15 @@ define([
 						}					
 						_getRole = _path = null;
 					},
-					'createPath',
-					skipMoveDs
-				);
-				_checkIJ = _sx = _sy = _ex = _ey = _a = _b = _distance = _dy = _num = null;
+					type: 'createMapPath',
+					skipMoveDs: skipMoveDs,
+					map: this._aStars,
+					mapOffX: _car.getMapOffX(),
+                    mapOffY: _car.getMapOffY(),
+                    ow: this.ow,
+                    oh: this.oh
+				});
+				_checkIJ = _sx = _sy = _ex = _ey = _a = _b = _distance = _dy = _num = _car = null;
 			}
 			_role = null;
 			return this;
@@ -1689,14 +1701,14 @@ define([
 					if (direction == 1) { //右上角气泡的标识箭头是位于气泡左侧
 						_p1 = { x: _pointerW + _lineWidth - 1, y: _bh - _radius - (_fillLineHeight >> 1) };
 						_p2 = { x: _pointerW + _lineWidth - 1, y: _bh - _radius - _fillLineHeight };
-						_p3 = { x: 0, y: _bh - _radius - parseInt(_fillLineHeight / 3) };
+						_p3 = { x: 0, y: _bh - _radius - ~~(_fillLineHeight / 3) };
 						_p4 = { x: _pointerW + _lineWidth, y: _bh - _radius - (_fillLineHeight >> 1) };
 						_p5 = { x: _pointerW + _lineWidth, y: _bh - _radius - _fillLineHeight };
 					}
 					else { //左上角气泡的标识箭头是位于气泡右侧
 						_p1 = { x: _bw - _lineWidth + 1, y: _bh - _radius - (_fillLineHeight >> 1) };
 						_p2 = { x: _bw - _lineWidth + 1, y: _bh - _radius - _fillLineHeight };
-						_p3 = { x: _bw - _lineWidth + _pointerW, y: _bh - _radius - parseInt(_fillLineHeight / 3) };
+						_p3 = { x: _bw - _lineWidth + _pointerW, y: _bh - _radius - ~~(_fillLineHeight / 3) };
 						_p4 = { x: _bw - _lineWidth, y: _bh - _radius - (_fillLineHeight >> 1) };
 						_p5 = { x: _bw - _lineWidth, y: _bh - _radius - _fillLineHeight };
 					}
@@ -1839,7 +1851,7 @@ define([
 				//处理渲染缓冲区
 				$.canvas.pass(role._passId)
 				.fillStyle('rgba(0, 0, 0, 1)').fillRect((width - _w) >> 1, height - _h - _step, _w, _h)
-				.fillStyle('rgba(0, 255, 0, 1)').fillRect((width - _w) >> 1, height - _h - _step, parseInt(_w * (_m > 1 ? 1 : _m)), _h)
+				.fillStyle('rgba(0, 255, 0, 1)').fillRect((width - _w) >> 1, height - _h - _step, ~~(_w * (_m > 1 ? 1 : _m)), _h)
 				.pass();
 				_curHP = _HP = _w = _h = _step = _m = null;
 			}
@@ -1929,14 +1941,14 @@ define([
 		 * @param {number} x
 		 */
 		xToJ: function(x) {
-			return parseInt((x + this.car.getMapOffX()) / this.ow);
+			return ~~((x + this.car.getMapOffX()) / this.ow);
 		},
 		/**
 		 * 将y坐标转换为A*寻路索引
 		 * @param {number} y
 		 */
 		yToI: function(y) {
-			return parseInt((y + this.car.getMapOffY()) / this.oh);
+			return ~~((y + this.car.getMapOffY()) / this.oh);
 		},
 		/**
 		 * 根据起点坐标和重点坐标获取8方向索引

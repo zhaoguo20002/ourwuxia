@@ -37,10 +37,6 @@ define([
                     .drawLine(gl.sys.w >> 1, 0, gl.sys.w >> 1, gl.sys.h)
                     .drawLine(0, gl.sys.h >> 1, gl.sys.w, gl.sys.h >> 1);
 				})
-				.setKeyCode('a', 65)
-				.setKeyCode('s', 83)
-				.setKeyCode('d', 68)
-				.setKeyCode('jump', 32)
 				.events
 //				.keyDown(function(e) {
 //					console.error(e.keyCode);
@@ -69,7 +65,7 @@ define([
 					    //主角轻功跳跃
 						modelWorld.entity.fly(startX, startY, offX, offY);
 					}
-				});
+				}, 300, 32);
 				notify.notify('createWorld');
 			});
 		}

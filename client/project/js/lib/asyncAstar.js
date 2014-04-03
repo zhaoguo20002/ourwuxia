@@ -124,7 +124,7 @@
 	var _as;
 	addEventListener('message', function(e) {
 		if (!_as) {
-			_as = new Astar(_map)
+			_as = new Astar(_map);
 		}
 		var _data = e.data, 
 		_map = _data.map || [], 
@@ -133,7 +133,7 @@
 		_sx = _data.sx, _sy = _data.sy,
 		_ex = _data.ex, _ey = _data.ey;
 		_as.map = _map;
-		_data.path = _as.getPath(_x0, _y0, _x1, _y1, _sx, _sy, _ex, _ey)
+		_data.path = _as.getPath(_x0, _y0, _x1, _y1, _sx, _sy, _ex, _ey);
 		postMessage(_data);
 		_data = _map = _x0 = _y0 = _x1 = _y1 = _sx = _sy = _ex = _ey = null;
 	}, true);

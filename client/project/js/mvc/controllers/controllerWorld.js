@@ -10,7 +10,12 @@ define([
 		this.view = view;
 		var _ctrl = this, _model = _ctrl.view.model;
 		
-         this.createAcctackingUI();
+        this.createAcctackingUI();
+        //PC快捷键
+        $.setKeyCode('a', 65)
+        .setKeyCode('s', 83)
+        .setKeyCode('d', 68)
+        .setKeyCode('jump', 32);
 	}, null, {
 		//更新场景数据
 		updateScene: function(data) {
@@ -32,7 +37,7 @@ define([
 		updateRoles: function(data) {
 			var _model = this.view.model, _data = data || [];
 			_model.roles = [
-				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 10, y0: 10, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true, jumpDistance: 300 },
+				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 10, y0: 10, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true, jumpDistance: 200 },
 				{ id: 12, name: '路人甲', desc: '大侠2', spriteId: 10002, x0: 12, y0: 12, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 }
 			];
 			for (var i = 0; i < 200; i++) {
@@ -65,36 +70,43 @@ define([
 		},
 		//抬起事件监听接口
 		touchEnd: function(offX, offY) {
-			var _model = this.view.model;
-			var getSuperStar = _model.world.getSuperStar();
-			if (getSuperStar) {
-				getSuperStar.setStep(_model.roleStep).setMoveDs(_model.moveDs).setStopDs(_model.stopDs);
+			var _model = this.view.model, _getSuperStar = _model.world.getSuperStar();
+			if (_getSuperStar && _getSuperStar.jumpTimes == 0) {
+				_getSuperStar.setStep(_model.roleStep).setMoveDs(_model.moveDs).setStopDs(_model.stopDs);
 				//寻路
-				_model.world.setCameraSpeed(_model.sw, _model.sh).aim(getSuperStar.id, offX, offY);
+				_model.world.setCameraSpeed(_model.sw, _model.sh).aim(_getSuperStar.id, offX, offY);
 				
 			}
-			_model = null;
+			_model = _getSuperStar = null;
 			return this;
 		},
 		//主角角色轻功飞
 		jump: function(offX, offY) {
 			var _model = this.view.model, _getSuperStar = _model.world.getSuperStar();
 			if (_getSuperStar) {
-				if (_getSuperStar.jumpTimes <= 3) {
+				if (_getSuperStar.jumpTimes < 3) {
+				    var _arcHeight = null, _num = null;
 					switch (_getSuperStar.jumpTimes) {
 						case 0: //1段跳动作
 						default:
 							_getSuperStar.setMoveDs(_model.jumpStep1Ds);
+							_arcHeight = 15,
+							_num = 25;
 							break;
 						case 1: //2段跳动作
 							_getSuperStar.setMoveDs(_model.jumpStep2Ds);
+                            _arcHeight = 20,
+                            _num = 30;
 							break;
 						case 2: //3段跳动作
 							_getSuperStar.setMoveDs(_model.jumpStep3Ds);
+							_arcHeight = 25,
+                            _num = 40;
 							break;
 					}
 					_getSuperStar.setStep(1).setStopDs(_model.stopDs);
-					_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, offX, offY);
+					_model.world.setCameraSpeed(_model.tw, _model.th).jump(_getSuperStar.id, offX, offY, 0, _arcHeight, _num);
+					_arcHeight = _num = null;
 				}
 			}
 			_model = _getSuperStar = null;
@@ -147,6 +159,7 @@ define([
 					default:
 						_jumpDistancs = _getSuperStar.jumpDistance || 100;
 						_r = _c > _jumpDistancs ? _jumpDistancs : _c; //限制跳跃距离
+						_r = _r < _model.tw * 3 ? _model.tw * 3 : _r; //最少跳3格
 						break;
 					case 1: //2段跳距离
 						_jumpDistancs = _getSuperStar.jumpDistance * 1.5 || 200;
@@ -223,13 +236,13 @@ define([
         },
 		//UI事件监听器
 		UIAction: function() {
-		    if ($.buttonLayout.pressed('attackBtn')) {
+		    if ($.buttonLayout.pressed('attackBtn') || $.keyPressed('a')) {
                 this.attack();
             }
-            if ($.buttonLayout.pressed('rushBtn')) {
+            if ($.buttonLayout.pressed('rushBtn') || $.keyPressed('s')) {
                 this.sprint();
             }
-            if ($.buttonLayout.pressed('retreatBtn')) {
+            if ($.buttonLayout.pressed('retreatBtn') || $.keyPressed('d')) {
                 this.flee();
             }
             if ($.buttonLayout.pressed('changeUIBtn')) {
