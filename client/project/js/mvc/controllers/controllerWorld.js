@@ -90,18 +90,18 @@ define([
 						case 0: //1段跳动作
 						default:
 							_getSuperStar.setMoveDs(_model.jumpStep1Ds);
-							_arcHeight = 15,
-							_num = 25;
+							_arcHeight = 30,
+							_num = 40;
 							break;
 						case 1: //2段跳动作
 							_getSuperStar.setMoveDs(_model.jumpStep2Ds);
-                            _arcHeight = 20,
-                            _num = 30;
+                            _arcHeight = 35,
+                            _num = 45;
 							break;
 						case 2: //3段跳动作
 							_getSuperStar.setMoveDs(_model.jumpStep3Ds);
-							_arcHeight = 25,
-                            _num = 40;
+							_arcHeight = 40,
+                            _num = 50;
 							break;
 					}
 					_getSuperStar.setStep(1).setStopDs(_model.stopDs);
@@ -159,7 +159,7 @@ define([
 					default:
 						_jumpDistancs = _getSuperStar.jumpDistance || 100;
 						_r = _c > _jumpDistancs ? _jumpDistancs : _c; //限制跳跃距离
-						_r = _r < _model.tw * 3 ? _model.tw * 3 : _r; //最少跳3格
+						_r = _r < _model.tw * 2 ? _model.tw * 2 : _r; //最少跳2格
 						break;
 					case 1: //2段跳距离
 						_jumpDistancs = _getSuperStar.jumpDistance * 1.5 || 200;

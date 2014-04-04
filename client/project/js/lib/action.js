@@ -248,7 +248,7 @@ define([
 			//处理缩放比例变换
 			if (this._zooms.length > 0) {
 				var _zoom = this._zooms.shift();
-				if (typeof parseInt(_zoom) == 'number') {
+				if (typeof ~~(_zoom) == 'number') {
 					this.setZoom(_zoom);
 				}
 				_zoom = null;
@@ -256,7 +256,7 @@ define([
 			//处理旋转比例变换
 			if (this._angles.length > 0) {
 				var _angle = this._angles.shift();
-				if (typeof parseInt(_angle) == 'number') {
+				if (typeof ~~(_angle) == 'number') {
 					this.setRotate(_angle);
 				}
 				_zoom = null;
@@ -305,8 +305,8 @@ define([
 						_rect[1],
 						_rect[2],
 						_rect[3],
-						this.zoom == 1 ? parseInt(this.x + this.dx + _fa[i][2] * this.zoom) : this.x + this.dx + _fa[i][2] * this.zoom,
-						this.zoom == 1 ? parseInt(this.y + this.dy + _fa[i][3] * this.zoom) : this.y + this.dy + _fa[i][3] * this.zoom,
+						this.zoom == 1 ? ~~(this.x + this.dx + _fa[i][2] * this.zoom) : this.x + this.dx + _fa[i][2] * this.zoom,
+						this.zoom == 1 ? ~~(this.y + this.dy + _fa[i][3] * this.zoom) : this.y + this.dy + _fa[i][3] * this.zoom,
 						_rect[2] * this.zoom,
 						_rect[3] * this.zoom
 					);
@@ -320,8 +320,8 @@ define([
 							_rect[2],
 							_rect[3],
 							_trans,
-							parseInt(this.x + this.dx - (_fa[i][2] + _rect[2])),
-							parseInt(this.y + this.dy + _fa[i][3])
+							~~(this.x + this.dx - (_fa[i][2] + _rect[2])),
+							~~(this.y + this.dy + _fa[i][3])
 						);
 					}
 					else {
@@ -347,8 +347,8 @@ define([
 						_img.bench.sy || 0,
 						_img.bench.sw || _img.bench.w,
 						_img.bench.sh || _img.bench.h,
-						parseInt(this.x + this.dx - ((_img.bench.w * this.zoom) >> 1)),
-						parseInt(this.y + this.dy - (_img.bench.h * this.zoom)),
+						~~(this.x + this.dx - ((_img.bench.w * this.zoom) >> 1)),
+						~~(this.y + this.dy - (_img.bench.h * this.zoom)),
 						_img.bench.w * this.zoom,
 						_img.bench.h * this.zoom
 					);
@@ -477,26 +477,26 @@ define([
 		}
 		if (_R1 && _R2) {
 //			$.canvas.fillStyle('#F00').fillRect(
-//			this.getSprite().trans == $.trans.TRANS_NONE ? parseInt((this.x + this.dx + _R1[0] * this.zoom)) : parseInt((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
-//				parseInt((this.y + this. dy + _R1[1] * this.zoom)), 
-//				parseInt(_R1[2] * this.zoom), 
-//				parseInt(_R1[3] * this.zoom)
+//			this.getSprite().trans == $.trans.TRANS_NONE ? ~~((this.x + this.dx + _R1[0] * this.zoom)) : ~~((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
+//				~~((this.y + this. dy + _R1[1] * this.zoom)), 
+//				~~(_R1[2] * this.zoom), 
+//				~~(_R1[3] * this.zoom)
 //			)
 //			.fillStyle('#FF0').fillRect(
-//			role.getSprite().trans == $.trans.TRANS_NONE ? parseInt((role.x + role.dx + _R2[0] * role.zoom)) : parseInt((role.x + role.dx - (_R2[0] + _R2[2]) * role.zoom)), 
-//				parseInt((role.y + role.dy + _R2[1] * role.zoom)), 
-//				parseInt(_R2[2] * role.zoom), 
-//				parseInt(_R2[3] * role.zoom)
+//			role.getSprite().trans == $.trans.TRANS_NONE ? ~~((role.x + role.dx + _R2[0] * role.zoom)) : ~~((role.x + role.dx - (_R2[0] + _R2[2]) * role.zoom)), 
+//				~~((role.y + role.dy + _R2[1] * role.zoom)), 
+//				~~(_R2[2] * role.zoom), 
+//				~~(_R2[3] * role.zoom)
 //			);
 			return $.comm.collision(
-				this.getSprite().trans == $.trans.TRANS_NONE ? parseInt((this.x + this.dx + _R1[0] * this.zoom)) : parseInt((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
-				parseInt((this.y + this. dy + _R1[1] * this.zoom)), 
-				parseInt(_R1[2] * this.zoom), 
-				parseInt(_R1[3] * this.zoom),
-				role.getSprite().trans == $.trans.TRANS_NONE ? parseInt((role.x + role.dx + _R2[0] * role.zoom)) : parseInt((role.x + role.dx - (_R2[0] + _R2[2]) * role.zoom)), 
-				parseInt((role.y + role.dy + _R2[1] * role.zoom)), 
-				parseInt(_R2[2] * role.zoom), 
-				parseInt(_R2[3] * role.zoom)
+				this.getSprite().trans == $.trans.TRANS_NONE ? ~~((this.x + this.dx + _R1[0] * this.zoom)) : ~~((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
+				~~((this.y + this. dy + _R1[1] * this.zoom)), 
+				~~(_R1[2] * this.zoom), 
+				~~(_R1[3] * this.zoom),
+				role.getSprite().trans == $.trans.TRANS_NONE ? ~~((role.x + role.dx + _R2[0] * role.zoom)) : ~~((role.x + role.dx - (_R2[0] + _R2[2]) * role.zoom)), 
+				~~((role.y + role.dy + _R2[1] * role.zoom)), 
+				~~(_R2[2] * role.zoom), 
+				~~(_R2[3] * role.zoom)
 			);
 		}
 		return false;
@@ -520,10 +520,10 @@ define([
 		}
 		if (_R1) {
 			return $.comm.collision(
-				this.getSprite().trans == $.trans.TRANS_NONE ? parseInt((this.x + this.dx + _R1[0] * this.zoom)) : parseInt((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
-				parseInt((this.y + this. dy + _R1[1] * this.zoom)), 
-				parseInt(_R1[2] * this.zoom), 
-				parseInt(_R1[3] * this.zoom),
+				this.getSprite().trans == $.trans.TRANS_NONE ? ~~((this.x + this.dx + _R1[0] * this.zoom)) : ~~((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
+				~~((this.y + this. dy + _R1[1] * this.zoom)), 
+				~~(_R1[2] * this.zoom), 
+				~~(_R1[3] * this.zoom),
 				x, y, width, height
 			);
 		}

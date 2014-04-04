@@ -122,9 +122,9 @@
             if (_getI != null && _getJ != null) {
                 //如果第一跳的话处理往回飞的路径
                 if (jumpTimes == 0) {
-                    _cp[3].x = _getJ * _ow + (_ow >> 1) - _mapOffX;
-                    _cp[3].y = _getI * _oh + (_oh >> 1) - _mapOffY;
-                    return this.createPath(_cp, pointNum);
+                    _cp[3].x = ~~(_getJ * _ow + (_ow >> 1) - _mapOffX);
+                    _cp[3].y = ~~(_getI * _oh + (_oh >> 1) - _mapOffY);
+                    return this.createMapPath(_cp, pointNum);
                 }
                 else { //如果是多段跳的途中变向，目的地又出现是障碍点的情况则不处理路径
                     return null;
@@ -133,7 +133,7 @@
             else {
                 return _curve;
             }
-        },
+        }
 	};
 	addEventListener('message', function(e) {
 		var _data = e.data, 

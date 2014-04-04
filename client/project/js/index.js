@@ -65,7 +65,7 @@ define([
 					    //主角轻功跳跃
 						modelWorld.entity.fly(startX, startY, offX, offY);
 					}
-				}, 300, 32);
+				}, 300, 5);
 				notify.notify('createWorld');
 			});
 		}
