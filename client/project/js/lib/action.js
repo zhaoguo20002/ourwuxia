@@ -530,6 +530,34 @@ define([
 		return false;
 	};
 	/**
+     * 角色的圆形输入碰撞<br />
+     * 用于用户的设备输入响应与角色碰撞检测,如鼠标碰撞，触碰碰撞等
+     * @param {number} x
+     * @param {number} y
+     * @param {number} width
+     * @param {number} height
+     * @param {string} type1
+     */
+    $.action.Role.prototype.circleCollisionInput = function(x, y, radius, type1) {
+        var _type1 = type1 || 'aR', _R1;
+        if (_type1 == 'aR') {
+            _R1 = this.aR;
+        }
+        else if (_type1 == 'bR') {
+            _R1 = this.bR;
+        }
+        if (_R1) {
+            return $.comm.rect2CircleCollision(
+                this.getSprite().trans == $.trans.TRANS_NONE ? ~~((this.x + this.dx + _R1[0] * this.zoom)) : ~~((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
+                ~~((this.y + this. dy + _R1[1] * this.zoom)), 
+                ~~(_R1[2] * this.zoom), 
+                ~~(_R1[3] * this.zoom),
+                x, y, radius
+            );
+        }
+        return false;
+    };
+	/**
 	 * 设置所有精灵动画是否循环播放
 	 * @returns {link.active.Role}
 	 * @param {number} step

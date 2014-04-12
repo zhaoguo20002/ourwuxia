@@ -1664,8 +1664,9 @@ var link, jsGame;
 			 */
 			collision: function(x1, y1, w1, h1, x2, y2, w2, h2) {
 				//_that.canvas.fillStyle('#FF0000').fillRect(x1, y1, w1, h1).fillStyle('#0000FF').fillRect(x2, y2, w2, h2);
-				if(w2 && Math.abs((x1 + parseInt(w1/2)) - (x2 + parseInt(w2/2))) < parseInt((w1 + w2) / 2) && Math.abs((y1 + parseInt(h1/2)) - (y2 + parseInt(h2/2))) < parseInt((h1 + h2) / 2))
+				if(w2 && Math.abs((x1 + (w1 >> 1)) - (x2 + (w2 >> 1))) < ((w1 + w2) >> 1) && Math.abs((y1 + (h1 >> 1)) - (y2 + (h2 >> 1))) < ((h1 + h2) >> 1)) {
 			  		return true;
+				}
 				return false;
 			},
 			/**
@@ -1679,10 +1680,38 @@ var link, jsGame;
 			 * @param {number} radius2
 			 */
 			circleCollision: function(x1, y1, radius1, x2, y2, radius2) {
-				 var _mx = Math.abs(x1 - x2), _my = Math.abs(y1 - y2);
-				 if ((Math.sqrt(_mx * _mx + _my * _my)) < (radius1 + radius2))
-					return true;
+				var _mx = Math.abs(x1 - x2), _my = Math.abs(y1 - y2);
+				if ((Math.sqrt(_mx * _mx + _my * _my)) < (radius1 + radius2)) {
+				return true;
+				     
+				}
 				return false;
+			},
+			/**
+             * 矩形和圆形的碰撞检测
+             * @returns {bool}
+             * @param {number} x1
+             * @param {number} y1
+             * @param {number} w1
+             * @param {number} h1
+             * @param {number} x2
+             * @param {number} y2
+             * @param {number} radius2
+             */
+			rect2CircleCollision: function(x1, y1, w1, h1, x2, y2, radius2) {
+			    //矩形小于圆形的情况下检测矩形4个点是否与圆形发生碰撞
+			    var _result = false;
+			    if (!(_result = this.circleCollision(x1, y1, 1, x2, y2, radius2))) { //左上角
+			        if (!(_result = this.circleCollision(x1 + w1, y1, 1, x2, y2, radius2))) { //右上角
+			            if (!(_result = this.circleCollision(x1 + w1, y1 + h1, 1, x2, y2, radius2))) { //右下角
+                            if (!(_result = this.circleCollision(x1, y1 + h1, 1, x2, y2, radius2))) { //左下角
+                                //最后处理当矩形大于圆形时是否出现矩形包围圆形的情况
+                                _result = this.collision(x1, y1, w1, h1, x2 - (radius2 >> 1), y2 - (radius2 >> 1), radius2, radius2);
+                            }
+                        }
+			        }
+			    }
+			    return _result;
 			},
 			/**
 			 * 计算两点间的路径
