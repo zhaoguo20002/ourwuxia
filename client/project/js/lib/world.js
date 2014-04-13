@@ -11,8 +11,9 @@ define([
 	'lib/carmark', 
 	'lib/astar',
 	'lib/bezier',
-	'lib/action'
-], function($, carmark, astar, bezier, action) {
+	'lib/action',
+	'lib/quadTree'
+], function($, carmark, astar, bezier, action, QuadTree) {
 	var _enums = {
 		//碰撞层地砖类型枚举
 		oType: {
@@ -136,6 +137,7 @@ define([
 		this._outScreenX = this.x - (this._outScreenWH >> 1);
 		this._outScreenY = this.y - (this._outScreenWH >> 1);
 		this._flyingRoleObjs = []; //正在飞行的角色对象集合
+		this._bulletTree = new QuadTree({ x: 0, y: 0, width: this.width, height: this.height }); //检测子弹碰撞的分屏四叉树
 		_props = null;
 	}, null, {
 		/**
@@ -404,7 +406,7 @@ define([
 					_aimObj = this._events[i][7];
 					if (_aimObj) {
 						_cx = _aimObj.x - (this._events[i][4] >> 1);
-						_cy = _aimObj.y - (this._events[i][5] >> 1)
+						_cy = _aimObj.y - (this._events[i][5] >> 1);
 					}
 				}
 				$.canvas.fillRect(_cx, _cy, this._events[i][4], this._events[i][5]);
@@ -2067,14 +2069,14 @@ define([
 			var _ev;
 			//先删除正在执行的事件
 			for (var i = this._onEventQueue.length - 1; i >= 0; i--) {
-				_ev = this._onEventQueue[i]
+				_ev = this._onEventQueue[i];
 				if (_ev && _ev[0] == type) {
 					this._events._onEventQueue(i, 1);
 				}
 			}
 			//再删除未执行的事件
 			for (var i = this._events.length - 1; i >= 0; i--) {
-				_ev = this._events[i]
+				_ev = this._events[i];
 				if (_ev && _ev[0] == type) {
 					this._events.splice(i, 1);
 				}
