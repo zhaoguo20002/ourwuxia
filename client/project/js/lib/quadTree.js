@@ -109,8 +109,12 @@ define([
                 _out.push.apply(_out, this.nodes[this.getIndex(item)].retrieve(item));
             }
             //再获取父节点中的对象集合
-            _out.push.apply(_out, this.overlapChildren);
-            _out.push.apply(_out, this.children);
+            if (this.overlapChildren.length > 0) {
+                _out.push.apply(_out, this.overlapChildren);
+            }
+            if (this.children.length > 0) {
+                _out.push.apply(_out, this.children);
+            }
             return _out;
         }
     });
