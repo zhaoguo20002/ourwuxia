@@ -153,7 +153,8 @@ define([
 		this.links = links || [];
 		//角色连接物方向和主体同步
 		for (var li = 0, lk; lk = this.links[li]; li++) {
-			lk.setSprite(this.getSprite().trans == $.trans.TRANS_NONE ? this.current : -this.current);
+			lk.setSprite(this.getSprite().trans == $.trans.TRANS_NONE ? this.current : -this.current)
+            .setStep(this.step);
 		}
 		return this;
 	};
@@ -268,7 +269,7 @@ define([
 				lk.action();
 				lk.x = this.x + (lk.dx || 0);
 				lk.y = this.y + (lk.dy || 0);
-				lk.getSprite().current = _sprite.current;
+				// lk.getSprite().current = _sprite.current;
 			}
 		}
 		_sprite.nextFrame();
@@ -449,6 +450,9 @@ define([
 		for (var _i = 0, _len = this.sprites.length; _i < _len; _i++) {
 			this.sprites[_i].setStep(step);
 		}
+        for (var li = 0, lk; lk = this.links[li]; li++) {
+            lk.setStep(this.step);
+        }
 		return this;
 	};
 	/**
