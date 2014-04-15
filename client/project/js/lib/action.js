@@ -952,7 +952,7 @@ define([
 	 */
 	$.action.Fragment = function(sprites) {
 		this.sprites = sprites || [];
-	}
+	};
 	/**
 	 * 动作片段帧出队列，直到值为null
 	 * @returns {object}
