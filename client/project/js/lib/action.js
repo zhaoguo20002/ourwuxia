@@ -264,13 +264,18 @@ define([
 			}
 			this.x += (_frame.args[1] + _vx);
 			this.y += (_frame.args[2] + _vy);
-			//角色连接物动作同步
-			for (var li = 0, lk; lk = this.links[li]; li++) {
-				lk.action();
-				lk.x = this.x + (lk.dx || 0);
-				lk.y = this.y + (lk.dy || 0);
-				// lk.getSprite().current = _sprite.current;
-			}
+			var _lkFrameAll;
+            //角色连接物动作同步
+            for (var li = 0, lk; lk = this.links[li]; li++) {
+                lk.x = this.x + (lk.dx || 0);
+                lk.y = this.y + (lk.dy || 0);
+                lk.getSprite().current = _sprite.current;
+                _lkFrameAll = lk.frames[lk.getSprite().getFrame().args[0]];
+                lk._fA = _lkFrameAll.fA; //缓存动作动画帧
+                lk.aR = _lkFrameAll.aR; //缓存攻击区域矩形
+                lk.bR = _lkFrameAll.bR; //缓存身体区域矩形
+            }
+            _lkFrameAll = null;
 		}
 		_sprite.nextFrame();
 		_sprite = _frameAll = _vx = _vy = _frame = null;
