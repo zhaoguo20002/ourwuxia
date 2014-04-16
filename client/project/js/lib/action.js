@@ -115,7 +115,7 @@ define([
 		}
 		var _cr = cr != undefined ? cr : 0,
 		_trans = _cr >= 0 ? $.trans.TRANS_NONE : $.trans.TRANS_MIRROR, 
-		_sprite, _frame, _frameAll;
+		_sprite, _frame;
 		if (this._cr != _cr) { //不能连续执行两次同样的动作
 			this._cr = _cr;
 			if (_cr < 0)
@@ -132,16 +132,13 @@ define([
 			if (stopedRefresh) {
 				this._stopedAction = this._cr; //编辑移动停止后播放的动作
 			}
-			_frameAll = this.frames[_frame.args[0]];
-			this._fA = _frameAll.fA; //缓存动作动画帧
-			this.aR = _frameAll.aR; //缓存攻击区域矩形
-			this.bR = _frameAll.bR; //缓存身体区域矩形
+            this.updateFrameParam();
 		}
 		//角色连接物转向
 		for (var li = 0, lk; lk = this.links[li]; li++) {
 			lk.setSprite(cr, notReset, stopedRefresh);
 		}
-		_cr = trans = _sprite = _frame = _frameAll = null;
+		_cr = trans = _sprite = _frame = null;
 		return this;
 	};
 	/**
@@ -204,6 +201,28 @@ define([
 	$.action.Role.prototype.getFrame = function(index) {
 		return this.frames[index == null ? this.getSprite().getFrame().args[0] : index];
 	};
+    /**
+     * 更新特定帧下的参数
+     * @returns {link.active.Role}
+     * @param {number} current
+     */
+    link.action.Role.prototype.updateFrameParam = function(current) {
+        var _sprite = this.getSprite();
+        if (!_sprite) {
+            _sprite = null;            
+            return this;
+        }
+        var _frame = _sprite.getFrame(), _frameAll;
+        if (_frame && _frame.args) {
+            if (_frameAll = this.frames[_frame.args[0]]) {
+                this._fA = _frameAll.fA; //缓存动作动画帧
+                this.aR = _frameAll.aR; //缓存攻击区域矩形
+                this.bR = _frameAll.bR; //缓存身体区域矩形
+            }
+        }
+        _sprite = _frame = _frameAll = null;
+        return this;
+    };
 	/**
 	 * 动作监听
 	 * @returns {link.active.Role}
@@ -212,12 +231,9 @@ define([
 		var _sprite = this.getSprite();
 		if (!_sprite)
 			return this;
-		var _frame = _sprite.getFrame(), _frameAll, _vx = 0, _vy = 0;
+		var _frame = _sprite.getFrame(), _vx = 0, _vy = 0;
 		if (_frame) {
-			_frameAll = this.frames[_frame.args[0]];
-			this._fA = _frameAll.fA; //缓存动作动画帧
-			this.aR = _frameAll.aR; //缓存攻击区域矩形
-			this.bR = _frameAll.bR; //缓存身体区域矩形
+		    this.updateFrameParam();
 			if (this._path.length > 0) {
 				var _pathStep = this._path.shift();
 				_vx = _pathStep[0] || 0;
@@ -269,16 +285,13 @@ define([
             for (var li = 0, lk; lk = this.links[li]; li++) {
                 lk.x = this.x + (lk.dx || 0);
                 lk.y = this.y + (lk.dy || 0);
-                lk.getSprite().current = _sprite.current;
-                _lkFrameAll = lk.frames[lk.getSprite().getFrame().args[0]];
-                lk._fA = _lkFrameAll.fA; //缓存动作动画帧
-                lk.aR = _lkFrameAll.aR; //缓存攻击区域矩形
-                lk.bR = _lkFrameAll.bR; //缓存身体区域矩形
+                lk.getSprite().setFrame(_sprite.current);
+                lk.updateFrameParam();
             }
             _lkFrameAll = null;
 		}
 		_sprite.nextFrame();
-		_sprite = _frameAll = _vx = _vy = _frame = null;
+		_sprite = _vx = _vy = _frame = null;
 		return this;
 	};
 	/**
