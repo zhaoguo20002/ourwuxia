@@ -1741,8 +1741,10 @@ var link, jsGame;
             
                     // Compute normal vector of the hyperplane for edge PQ
                     // Assume winding orders of the polygons are counterclockwise
-                    nx = qy - py;
+					//求法向量
+                    nx = qy - py; 
                     ny = px - qx;
+					//根据边的向量(其实就是向量坐标对应的点)计算在法向量上的投影向量[边qp的向量为(px,py)]
                     NdotP = nx * px + ny * py;
                     // Test if all vertices V in B are outside of the hyperplane
                     allOutside = true;
