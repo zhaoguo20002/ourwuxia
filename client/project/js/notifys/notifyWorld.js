@@ -8,8 +8,8 @@ define([
 	'mvc/views/viewWorld',
 	'mvc/controllers/controllerWorld'
 ], function($, notify, modelWorld, ViewWorld, ControllerWorld) {
-	notify.type.createWorld = notifyId++; //创建世界
-	notify.type.createWorldEcho = notifyId++; //创建世界回调
+	notify.markKey('createWorld') //创建世界
+	.markKey('createWorldEcho'); //创建世界回调
 	
 	//订阅 创建世界 消息
 	notify.register('createWorld', function(param) {

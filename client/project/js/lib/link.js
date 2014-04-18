@@ -1714,6 +1714,59 @@ var link, jsGame;
 			    return _result;
 			},
 			/**
+             *  多边形碰撞检测
+             *  @returns {bool}
+             *  @param {array} poly1
+             *  @param {array} poly2
+			 */
+			polygonCollision: function(poly1, poly2) {
+			    return this.polygonSAT(poly1, poly2) && this.polygonSAT(poly2, poly1);
+			},
+			/**
+			 *  分离轴算法
+             *  @returns {bool}
+             *  @param {array} poly1
+             *  @param {array} poly2
+			 */
+			polygonSAT: function(poly1, poly2) {
+			    var alen = poly1.length, 
+			    blen = poly2.length, 
+			    px = poly1[poly1.length - 1][0], 
+                py = poly1[poly1.length - 1][1], 
+                qx, qy, nx, ny, NdotP, allOutside, vx, vy, det, i, j;
+                //检测poly1的每条边
+                for (i = 0; i < alen; i++) {
+                    qx = poly1[i][0];
+                    qy = poly1[i][1];
+            
+                    // Compute normal vector of the hyperplane for edge PQ
+                    // Assume winding orders of the polygons are counterclockwise
+                    nx = qy - py;
+                    ny = px - qx;
+                    NdotP = nx * px + ny * py;
+                    // Test if all vertices V in B are outside of the hyperplane
+                    allOutside = true;
+                    for (j = 0; j < blen; j++) {
+                        vx = poly2[j][0];
+                        vy = poly2[j][1];
+            
+                        // det = N dot (V - P) = N dot V - N dot P
+                        det = nx * vx + ny * vy - NdotP;
+                        if (det < 0) {  // V is inside
+                            allOutside = false;
+                            break;
+                        }
+                    }
+            
+                    if (allOutside)
+                        return false;
+            
+                    px = qx;
+                    py = qy;
+                }
+                return true;
+			},
+			/**
 			 * 计算两点间的路径
      		 * @returns {array}
 			 * @param {number} x1
