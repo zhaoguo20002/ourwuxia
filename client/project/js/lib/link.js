@@ -1718,39 +1718,48 @@ var link, jsGame;
              *  @returns {bool}
              *  @param {array} poly1
              *  @param {array} poly2
+             *  @param {number} x1
+             *  @param {number} y1
+             *  @param {number} x2
+             *  @param {number} y2
 			 */
-			polygonCollision: function(poly1, poly2) {
-			    return this.polygonSAT(poly1, poly2) && this.polygonSAT(poly2, poly1);
+			polygonCollision: function(poly1, poly2, x1, y1, x2, y2) {
+			    return this.polygonSAT(poly1, poly2, x1, y1, x2, y2) && this.polygonSAT(poly2, poly1, x2, y2, x1, y1);
 			},
 			/**
 			 *  分离轴算法
              *  @returns {bool}
              *  @param {array} poly1
              *  @param {array} poly2
+             *  @param {number} x1
+             *  @param {number} y1
+             *  @param {number} x2
+             *  @param {number} y2
 			 */
-			polygonSAT: function(poly1, poly2) {
+			polygonSAT: function(poly1, poly2, x1, y1, x2, y2) {
 			    var alen = poly1.length, 
 			    blen = poly2.length, 
-			    px = poly1[poly1.length - 1][0], 
-                py = poly1[poly1.length - 1][1], 
+			    _x1 = x1 || 0, _y1 = y1 || 0, _x2 = x2 || 0, _y2 = y2 || 0,
+			    px = _x1 + poly1[poly1.length - 1][0], 
+                py = _y1 + poly1[poly1.length - 1][1], 
                 qx, qy, nx, ny, NdotP, allOutside, vx, vy, det, i, j;
                 //检测poly1的每条边
                 for (i = 0; i < alen; i++) {
-                    qx = poly1[i][0];
-                    qy = poly1[i][1];
+                    qx = _x1 + poly1[i][0];
+                    qy = _y1 + poly1[i][1];
             
                     // Compute normal vector of the hyperplane for edge PQ
                     // Assume winding orders of the polygons are counterclockwise
 					//求法向量
                     nx = qy - py; 
                     ny = px - qx;
-					//根据边的向量(其实就是向量坐标对应的点)计算在法向量上的投影向量[边qp的向量为(px,py)]
+					//根据边的向量(其实就是向量坐标对应的点)计算在法向量上的投影向量[边qp的向量为(px,py),为固定向量]
                     NdotP = nx * px + ny * py;
                     // Test if all vertices V in B are outside of the hyperplane
                     allOutside = true;
                     for (j = 0; j < blen; j++) {
-                        vx = poly2[j][0];
-                        vy = poly2[j][1];
+                        vx = _x2 + poly2[j][0];
+                        vy = _y2 + poly2[j][1];
             
                         // det = N dot (V - P) = N dot V - N dot P
                         det = nx * vx + ny * vy - NdotP;
@@ -1766,7 +1775,48 @@ var link, jsGame;
                     px = qx;
                     py = qy;
                 }
+                // _that.canvas.strokeStyle('#FF0')
+                // .beginPath()
+                // .moveTo(_x1 + poly1[0][0], _y1 + poly1[0][1])
+                // .lineTo(_x1 + poly1[1][0], _y1 + poly1[1][1])
+                // .lineTo(_x1 + poly1[2][0], _y1 + poly1[2][1])
+                // .lineTo(_x1 + poly1[3][0], _y1 + poly1[3][1])
+                // .lineTo(_x1 + poly1[0][0], _y1 + poly1[0][1])
+                // .stroke();
+                // _that.canvas.strokeStyle('#F0F')
+                // .beginPath()
+                // .moveTo(_x2 + poly2[0][0], _y2 + poly2[0][1])
+                // .lineTo(_x2 + poly2[1][0], _y2 + poly2[1][1])
+                // .lineTo(_x2 + poly2[2][0], _y2 + poly2[2][1])
+                // .lineTo(_x2 + poly2[3][0], _y2 + poly2[3][1])
+                // .lineTo(_x2 + poly2[0][0], _y2 + poly2[0][1])
+                // .stroke();
                 return true;
+			},
+			/**
+			 *  使矩阵旋转N度
+             *  @returns {link.comm}
+             *  @param {array} p
+             *  @param {number} angle
+			 */
+			setMatrixRotate: function(p, angle) {
+			    if (!p || !p[0]) {
+                    return null;
+                }
+                var w = 50, h = 50, x, y, 
+                radian = Math.PI / 180 * angle, 
+                sin = Math.sin(radian), cos = Math.cos(radian);
+                for (var i = 0; i < p.length; i++) {
+                    x = p[i][0];
+                    y = p[i][1];
+                    //逆时针
+                    // p0[i][0] = cos * x + sin * y;
+                    // p0[i][1] = -sin * x + cos * y;
+                    //顺时针
+                    p[i][0] = cos * x - sin * y;
+                    p[i][1] = sin * x + cos * y;
+                }
+                return this;
 			},
 			/**
 			 * 计算两点间的路径

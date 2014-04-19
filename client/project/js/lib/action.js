@@ -101,6 +101,8 @@ define([
 		this._locked = false; //锁定动作控制变量
 		this.speed = 5;
 		this.links = []; //关联角色
+		this.polyAR = [[0, 0], [0, 0], [0, 0], [0, 0]]; //攻击矩形多边形行定点集合,角色采用obb碰撞检测模式,包围角色的永远是一个正矩形
+        this.polyBR = [[0, 0], [0, 0], [0, 0], [0, 0]]; //身体矩形多边形行定点集合,角色采用obb碰撞检测模式,包围角色的永远是一个正矩形
 	};
 	/**
 	 * 设置当前角色的动作
@@ -206,7 +208,7 @@ define([
      * @returns {link.active.Role}
      * @param {number} current
      */
-    link.action.Role.prototype.updateFrameParam = function(current) {
+    $.action.Role.prototype.updateFrameParam = function(current) {
         var _sprite = this.getSprite();
         if (!_sprite) {
             _sprite = null;            
@@ -218,6 +220,32 @@ define([
                 this._fA = _frameAll.fA; //缓存动作动画帧
                 this.aR = _frameAll.aR; //缓存攻击区域矩形
                 this.bR = _frameAll.bR; //缓存身体区域矩形
+                var _ar = this.getAttackRect(), _br = this.getBodyRect();
+                //处理矩形的4个顶点
+                this.polyAR[0][0] = _ar.x;
+                this.polyAR[0][1] = _ar.y;
+                this.polyAR[1][0] = _ar.x + _ar.width;
+                this.polyAR[1][1] = _ar.y;
+                this.polyAR[2][0] = _ar.x + _ar.width;
+                this.polyAR[2][1] = _ar.y + _ar.height;
+                this.polyAR[3][0] = _ar.x;
+                this.polyAR[3][1] = _ar.y + _ar.height;
+                
+                this.polyBR[0][0] = _br.x;
+                this.polyBR[0][1] = _br.y;
+                this.polyBR[1][0] = _br.x + _br.width;
+                this.polyBR[1][1] = _br.y;
+                this.polyBR[2][0] = _br.x + _br.width;
+                this.polyBR[2][1] = _br.y + _br.height;
+                this.polyBR[3][0] = _br.x;
+                this.polyBR[3][1] = _br.y + _br.height;
+                //角度不为0则处理矩阵旋转
+                if (this.angle != 0) {
+                    //旋转矩阵
+                    $.comm.setMatrixRotate(this.polyAR, this.angle)
+                    .setMatrixRotate(this.polyBR, this.angle);
+                }
+                _ar = _br = null;
             }
         }
         _sprite = _frame = _frameAll = null;
@@ -303,7 +331,7 @@ define([
 		var _sprite = this.getSprite();
 		if (_sprite && this._fA) {
 			var _fa = this._fA, _len = _fa.length, _actRenderContext = $.canvas, _trans = _sprite.trans, _rect, _imgId, _img;
-			if (_fa[0]) {
+			if (this.angle > 0) {
 				var _bodyRect = _fa[0], 
 				_transX = this.x, 
 				_transY = this.y;
@@ -373,7 +401,7 @@ define([
 					);
 				}
 			}
-			if (_fa[0]) {
+			if (this.angle > 0) {
 				$.canvas.restore();
 			}
 			//角色连接物动作渲染
@@ -414,7 +442,7 @@ define([
 	};
 	/**
 	 * 取得角色身体矩形数据
-	 * @returns {array}
+	 * @returns {object}
 	 * @param {number} spriteIndex
 	 * @param {number} frameIndex
 	 */
@@ -429,15 +457,15 @@ define([
 		}
 		var br = this.frames[_frame.args[0]].bR;
 		if ((spriteIndex == null && _sprite.trans != $.trans.TRANS_NONE) || spriteIndex < 0) {
-			return [-(br[0] + br[2] * this.zoom), br[1] * this.zoom, br[2] * this.zoom, br[3] * this.zoom]; 
+			return { x: -(br[0] + br[2] * this.zoom), y: br[1] * this.zoom, width: br[2] * this.zoom, height: br[3] * this.zoom }; 
 		}
 		else {
-			return [br[0] * this.zoom, br[1] * this.zoom, br[2] * this.zoom, br[3] * this.zoom];
+			return { x: br[0] * this.zoom, y: br[1] * this.zoom, width: br[2] * this.zoom, height: br[3] * this.zoom };
 		}
 	};
 	/**
 	 * 取得角色攻击矩形数据
-	 * @returns {array}
+	 * @returns {object}
 	 * @param {number} spriteIndex
 	 * @param {number} frameIndex
 	 */
@@ -452,10 +480,10 @@ define([
 		}
 		var ar = this.frames[_frame.args[0]].aR;
 		if ((spriteIndex == null && _sprite.trans != $.trans.TRANS_NONE) || spriteIndex < 0) {
-			return [-(ar[0] + ar[2]* this.zoom), ar[1] * this.zoom, ar[2] * this.zoom, ar[3] * this.zoom]; 
+			return { x: -(ar[0] + ar[2] * this.zoom), y: ar[1] * this.zoom, width: ar[2] * this.zoom, height: ar[3] * this.zoom }; 
 		}
 		else {
-			return [ar[0] * this.zoom, ar[1] * this.zoom, ar[2] * this.zoom, ar[3] * this.zoom];
+			return { x: ar[0] * this.zoom, y: ar[1] * this.zoom, width: ar[2] * this.zoom, height: ar[3] * this.zoom };
 		}
 	};
 	/**
@@ -476,6 +504,7 @@ define([
 	/**
 	 * 检测和其他角色的碰撞<br />
 	 * type1和type2的值为bR或aR，表示身体或攻击区域的检测
+     * @returns {bool}
 	 * @param {link.action.Role} role
 	 * @param {string} type1
 	 * @param {string} type2
@@ -486,16 +515,16 @@ define([
 		}
 		var _type1 = type1 || 'aR', _type2 = type2 || 'aR', _R1, _R2;
 		if (_type1 == 'aR') {
-			_R1 = this.aR;
+			_R1 = this.getAttackRect();
 		}
 		else if (_type1 == 'bR') {
-			_R1 = this.bR;
+			_R1 = this.getBodyRect();
 		}
 		if (_type2 == 'aR') {
-			_R2 = role.aR;
+			_R2 = role.getAttackRect();
 		}
 		else if (_type2 == 'bR') {
-			_R2 = role.bR;
+			_R2 = role.getBodyRect();
 		}
 		if (_R1 && _R2) {
 //			$.canvas.fillStyle('#F00').fillRect(
@@ -511,14 +540,14 @@ define([
 //				~~(_R2[3] * role.zoom)
 //			);
 			return $.comm.collision(
-				this.getSprite().trans == $.trans.TRANS_NONE ? ~~((this.x + this.dx + _R1[0] * this.zoom)) : ~~((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
-				~~((this.y + this. dy + _R1[1] * this.zoom)), 
-				~~(_R1[2] * this.zoom), 
-				~~(_R1[3] * this.zoom),
-				role.getSprite().trans == $.trans.TRANS_NONE ? ~~((role.x + role.dx + _R2[0] * role.zoom)) : ~~((role.x + role.dx - (_R2[0] + _R2[2]) * role.zoom)), 
-				~~((role.y + role.dy + _R2[1] * role.zoom)), 
-				~~(_R2[2] * role.zoom), 
-				~~(_R2[3] * role.zoom)
+				~~(this.x + this.dx + _R1.x), 
+				~~(this.y + this. dy + _R1.y), 
+				~~(_R1.width), 
+				~~(_R1.height),
+				~~(role.x + role.dx + _R2.x), 
+				~~(role.y + role.dy + _R2.y), 
+				~~(_R2.width), 
+				~~(_R2.height)
 			);
 		}
 		return false;
@@ -526,6 +555,7 @@ define([
 	/**
 	 * 角色的输入碰撞<br />
 	 * 用于用户的设备输入响应与角色碰撞检测,如鼠标碰撞，触碰碰撞等
+     * @returns {bool}
 	 * @param {number} x
 	 * @param {number} y
 	 * @param {number} width
@@ -535,17 +565,17 @@ define([
 	$.action.Role.prototype.collisionInput = function(x, y, width, height, type1) {
 		var _type1 = type1 || 'aR', _R1;
 		if (_type1 == 'aR') {
-			_R1 = this.aR;
+			_R1 = this.getAttackRect();
 		}
 		else if (_type1 == 'bR') {
-			_R1 = this.bR;
+			_R1 = this.getBodyRect();
 		}
 		if (_R1) {
 			return $.comm.collision(
-				this.getSprite().trans == $.trans.TRANS_NONE ? ~~((this.x + this.dx + _R1[0] * this.zoom)) : ~~((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
-				~~((this.y + this. dy + _R1[1] * this.zoom)), 
-				~~(_R1[2] * this.zoom), 
-				~~(_R1[3] * this.zoom),
+				~~(this.x + this.dx + _R1.x), 
+				~~(this.y + this. dy + _R1.y), 
+				~~(_R1.width), 
+				~~(_R1.height),
 				x, y, width, height
 			);
 		}
@@ -554,6 +584,7 @@ define([
 	/**
      * 角色的圆形输入碰撞<br />
      * 用于用户的设备输入响应与角色碰撞检测,如鼠标碰撞，触碰碰撞等
+     * @returns {bool}
      * @param {number} x
      * @param {number} y
      * @param {number} width
@@ -563,19 +594,49 @@ define([
     $.action.Role.prototype.circleCollisionInput = function(x, y, radius, type1) {
         var _type1 = type1 || 'aR', _R1;
         if (_type1 == 'aR') {
-            _R1 = this.aR;
+            _R1 = this.getAttackRect();
         }
         else if (_type1 == 'bR') {
-            _R1 = this.bR;
+            _R1 = this.getBodyRect();
         }
         if (_R1) {
             return $.comm.rect2CircleCollision(
-                this.getSprite().trans == $.trans.TRANS_NONE ? ~~((this.x + this.dx + _R1[0] * this.zoom)) : ~~((this.x + this.dx - (_R1[0] + _R1[2]) * this.zoom)), 
-                ~~((this.y + this. dy + _R1[1] * this.zoom)), 
-                ~~(_R1[2] * this.zoom), 
-                ~~(_R1[3] * this.zoom),
+                ~~(this.x + this.dx + _R1.x), 
+                ~~(this.y + this. dy + _R1.y), 
+                ~~(_R1.width), 
+                ~~(_R1.height),
                 x, y, radius
             );
+        }
+        return false;
+    };
+    /**
+     *  角色的有多边形碰撞[带旋转的碰撞]<br />
+     * type1和type2的值为bR或aR，表示身体或攻击区域的检测
+     * @returns {bool}
+     * @param {link.action.Role} role
+     * @param {string} type1
+     * @param {string} type2
+     */
+    $.action.Role.prototype.polygonSATCollision = function(role, type1, type2) {
+        if (!role) {
+            return false;
+        }
+        var _type1 = type1 || 'aR', _type2 = type2 || 'aR', _poly1, _poly2;
+        if (_type1 == 'aR') {
+            _poly1 = this.polyAR;
+        }
+        else if (_type1 == 'bR') {
+            _poly1 = this.polyBR;
+        }
+        if (_type2 == 'aR') {
+            _poly2 = role.polyAR;
+        }
+        else if (_type2 == 'bR') {
+            _poly2 = role.polyBR;
+        }
+        if (_poly1 && _poly2) {
+            return $.comm.polygonCollision(_poly1, _poly2, this.x + this.dx, this.y + this.dy, role.x + role.dx, role.y + role.dy);
         }
         return false;
     };
@@ -729,12 +790,17 @@ define([
 	};
 	/**
 	 * 设置角色的旋转<br />
-	 * [正数为顺时针旋转，负数为逆时针旋转]<br />
+	 * [只能设置正数]<br />
 	 * @returns {link.active.Role}
 	 * @param {number} angle
 	 */
 	$.action.Role.prototype.setRotate = function(angle) {
-		this.angle = Math.abs(angle) || 0;
+	    if (angle != this.angle) {
+	        if (Math.abs(angle) > 360) {
+	            angle = angle % 360;
+	        }
+    		this.angle = angle < 0 ? 360 + angle : angle;
+	    }
 		return this;
 	};
 	/**
@@ -778,7 +844,7 @@ define([
 	 */
 	$.action.Role.prototype.rotate = function(angle) {
 		if (angle != null) {
-			this.angle += angle;
+			this.setRotate(this.angle + angle);
 		}
 		return this;
 	};

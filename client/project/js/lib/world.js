@@ -392,6 +392,23 @@ define([
 					.fillStyle('rgba(255, 0, 255, 0.5)').fillRect(
 					_shelter.getSprite().trans == $.trans.TRANS_NONE ? ~~((_shelter.x + _shelter.dx + _shelter.aR[0] * _shelter.zoom)) : ~~((_shelter.x + _shelter.dx - (_shelter.aR[0] + _shelter.aR[2]) * _shelter.zoom)), 
 					_shelter.y + _shelter.dy + _shelter.aR[1] * _shelter.zoom, _shelter.aR[2] * _shelter.zoom, _shelter.aR[3] * _shelter.zoom);
+					//处理obb有向包围盒
+					$.canvas.strokeStyle('#F00')
+                    .beginPath()
+                    .moveTo(_shelter.x + _shelter.dx + _shelter.polyAR[0][0], _shelter.y + _shelter.dy + _shelter.polyAR[0][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyAR[1][0], _shelter.y + _shelter.dy + _shelter.polyAR[1][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyAR[2][0], _shelter.y + _shelter.dy + _shelter.polyAR[2][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyAR[3][0], _shelter.y + _shelter.dy + _shelter.polyAR[3][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyAR[0][0], _shelter.y + _shelter.dy + _shelter.polyAR[0][1])
+                    .stroke()
+                    .strokeStyle('#0F0')
+                    .beginPath()
+                    .moveTo(_shelter.x + _shelter.dx + _shelter.polyBR[0][0], _shelter.y + _shelter.dy + _shelter.polyBR[0][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyBR[1][0], _shelter.y + _shelter.dy + _shelter.polyBR[1][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyBR[2][0], _shelter.y + _shelter.dy + _shelter.polyBR[2][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyBR[3][0], _shelter.y + _shelter.dy + _shelter.polyBR[3][1])
+                    .lineTo(_shelter.x + _shelter.dx + _shelter.polyBR[0][0], _shelter.y + _shelter.dy + _shelter.polyBR[0][1])
+                    .stroke();
 					_fa = _len = null;
 				}
 			}
