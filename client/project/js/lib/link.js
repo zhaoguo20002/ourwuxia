@@ -1775,6 +1775,7 @@ var link, jsGame;
                     px = qx;
                     py = qy;
                 }
+                
                 // _that.canvas.strokeStyle('#FF0')
                 // .beginPath()
                 // .moveTo(_x1 + poly1[0][0], _y1 + poly1[0][1])
@@ -1850,6 +1851,7 @@ var link, jsGame;
 					_ly = _py;
 					_r += _step;
 				}
+				_path.angle = _rotate - 90; //将路径对应的旋转角度绑定到路径上的angle属性
 				_x1 = _y1 = _x2 = _y2 = _a = _b = _c = _step = _r = _rotate = null;
 				return _path;
 			}

@@ -37,8 +37,8 @@ define([
 		updateRoles: function(data) {
 			var _model = this.view.model, _data = data || [];
 			_model.roles = [
-				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 10, y0: 10, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true, jumpDistance: 200 },
-				{ id: 12, name: '路人甲', desc: '大侠2', spriteId: 10002, x0: 12, y0: 7, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 }
+				{ id: 1, name: '主角', desc: '大侠1', spriteId: 10001, x0: 12, y0: 7, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0, host: true, jumpDistance: 200 }
+				//{ id: 12, name: '路人甲', desc: '大侠2', spriteId: 10002, x0: 12, y0: 7, speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 }
 			];
 			// for (var i = 0; i < 200; i++) {
 			    // _model.roles.push({ id: 'test' + i, name: '测试' + i, desc: '大侠' + i, spriteId: 10002, x0: $.comm.getRandom(0, 60), y0: $.comm.getRandom(0, 60), speedX: _model.nodeXStep, speedY: _model.nodeYStep, action: 0 });
@@ -59,6 +59,11 @@ define([
 					.setCameraSpeed(_model.sw, _model.sh);
 				}
 			}
+			_model.world.addBullet({
+			    id: 'e1',
+			    role: man_001NameSpace.get(0),
+			    x: 50, y: 50, aimX: 270, aimY: 450, speed: 200
+			});
 			_model = null;
 			return this;
 		},
@@ -263,9 +268,7 @@ define([
 				
 				this.lockEnemyAction() //索敌监听
 				.UIAction(); //UI事件监听
-				if (_model.world.getRole(1).polygonSATCollision(_model.world.getRole(12), 'bR', 'bR')) {
-				    console.error('碰撞了');
-				}
+				// _model.world.getRole(1).rotate(5);
 			}
 			_model = null;
 			return this;

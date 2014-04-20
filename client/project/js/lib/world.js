@@ -138,6 +138,7 @@ define([
 		this._outScreenY = this.y - (this._outScreenWH >> 1);
 		this._flyingRoleObjs = []; //正在飞行的角色对象集合
 		this._bulletTree = new QuadTree({ x: 0, y: 0, width: this.width, height: this.height }); //检测子弹碰撞的分屏四叉树
+		this._bullets = []; //子弹队列
 		_props = null;
 	}, null, {
 		/**
@@ -299,6 +300,12 @@ define([
 						_shelter.render();
 					}
 				}
+				//处理前景特效动画
+                for (var i = this._frontEffs.length -1, _eff; _eff = this._frontEffs[i]; i--) {
+                    if (!_eff.outScreen) {
+                        _eff.render();
+                    }
+                }
 				_shelter = _eff = null;
 			}
 			if (this._focusLampShelters.length > 0) {
@@ -337,16 +344,6 @@ define([
 			}
 			return this;
 		},
-		//渲染前景特效
-		frontEffectRender: function() {
-			//处理前景特效动画
-			for (var i = this._frontEffs.length -1, _eff; _eff = this._frontEffs[i]; i--) {
-				if (!_eff.outScreen) {
-					_eff.render();
-				}
-			}
-			return this;
-		},
 		/**
 		 * 清除所有的精灵对象
 		 */
@@ -372,6 +369,43 @@ define([
 		 * 调试渲染
 		 */
 		debugRender: function() {
+		    var _eff;
+            //处理背景特效动画
+            for (var i = this._backEffs.length -1; i >= 0; i--) {
+                _eff = this._backEffs[i];
+                if (_eff && !_eff.outScreen) {
+                    //处理多边形
+                    $.canvas.strokeStyle('#F00')
+                    .lineWidth(1)
+                    .beginPath()
+                    .moveTo(_eff.x + _eff.dx + _eff.polyAR[0][0], _eff.y + _eff.dy + _eff.polyAR[0][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[1][0], _eff.y + _eff.dy + _eff.polyAR[1][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[2][0], _eff.y + _eff.dy + _eff.polyAR[2][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[3][0], _eff.y + _eff.dy + _eff.polyAR[3][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[0][0], _eff.y + _eff.dy + _eff.polyAR[0][1])
+                    .stroke()
+                    .strokeStyle('#0F0')
+                    .beginPath()
+                    .moveTo(_eff.x + _eff.dx + _eff.polyBR[0][0], _eff.y + _eff.dy + _eff.polyBR[0][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[1][0], _eff.y + _eff.dy + _eff.polyBR[1][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[2][0], _eff.y + _eff.dy + _eff.polyBR[2][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[3][0], _eff.y + _eff.dy + _eff.polyBR[3][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[0][0], _eff.y + _eff.dy + _eff.polyBR[0][1])
+                    .stroke();
+                    //处理AABB包围盒
+                    var _aabbAR = _eff.getAABBAttackRect(), _aabbBR = _eff.getAABBBodyRect();
+                    $.canvas.strokeStyle('#000')
+                    .lineWidth(2)
+                    .strokeRect(_eff.x + _eff.dx + _aabbAR.x, 
+                    _eff.y + _eff.dy + _aabbAR.y, 
+                    _aabbAR.width, 
+                    _aabbAR.height)
+                    .strokeRect(_eff.x + _eff.dx + _aabbBR.x, 
+                    _eff.y + _eff.dy + _aabbBR.y, 
+                    _aabbBR.width, 
+                    _aabbBR.height);
+                }
+            }
 			var _shelter;
 			for (var i = this._shelters.length - 1; i >= 0; i--) {
 				_shelter = this._shelters[i];
@@ -392,8 +426,9 @@ define([
 					.fillStyle('rgba(255, 0, 255, 0.5)').fillRect(
 					_shelter.getSprite().trans == $.trans.TRANS_NONE ? ~~((_shelter.x + _shelter.dx + _shelter.aR[0] * _shelter.zoom)) : ~~((_shelter.x + _shelter.dx - (_shelter.aR[0] + _shelter.aR[2]) * _shelter.zoom)), 
 					_shelter.y + _shelter.dy + _shelter.aR[1] * _shelter.zoom, _shelter.aR[2] * _shelter.zoom, _shelter.aR[3] * _shelter.zoom);
-					//处理obb有向包围盒
+					//处理多边形
 					$.canvas.strokeStyle('#F00')
+                    .lineWidth(1)
                     .beginPath()
                     .moveTo(_shelter.x + _shelter.dx + _shelter.polyAR[0][0], _shelter.y + _shelter.dy + _shelter.polyAR[0][1])
                     .lineTo(_shelter.x + _shelter.dx + _shelter.polyAR[1][0], _shelter.y + _shelter.dy + _shelter.polyAR[1][1])
@@ -409,7 +444,19 @@ define([
                     .lineTo(_shelter.x + _shelter.dx + _shelter.polyBR[3][0], _shelter.y + _shelter.dy + _shelter.polyBR[3][1])
                     .lineTo(_shelter.x + _shelter.dx + _shelter.polyBR[0][0], _shelter.y + _shelter.dy + _shelter.polyBR[0][1])
                     .stroke();
-					_fa = _len = null;
+                    //处理AABB包围盒
+                    var _aabbAR = _shelter.getAABBAttackRect(), _aabbBR = _shelter.getAABBBodyRect();
+                    $.canvas.strokeStyle('#000')
+                    .lineWidth(2)
+                    .strokeRect(_shelter.x + _shelter.dx + _aabbAR.x, 
+                    _shelter.y + _shelter.dy + _aabbAR.y, 
+                    _aabbAR.width, 
+                    _aabbAR.height)
+                    .strokeRect(_shelter.x + _shelter.dx + _aabbBR.x, 
+                    _shelter.y + _shelter.dy + _aabbBR.y, 
+                    _aabbBR.width, 
+                    _aabbBR.height);
+					_fa = _len = _aabbAR = _aabbBR = null;
 				}
 			}
 			var _cx, _cy, _aimObj;
@@ -437,7 +484,43 @@ define([
 					}
 				}
 			}
-			_shelter = null;
+			
+            //处理前景特效动画
+            for (var i = this._frontEffs.length -1, _eff; _eff = this._frontEffs[i]; i--) {
+                if (!_eff.outScreen) {
+                    //处理多边形
+                    $.canvas.strokeStyle('#F00')
+                    .lineWidth(1)
+                    .beginPath()
+                    .moveTo(_eff.x + _eff.dx + _eff.polyAR[0][0], _eff.y + _eff.dy + _eff.polyAR[0][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[1][0], _eff.y + _eff.dy + _eff.polyAR[1][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[2][0], _eff.y + _eff.dy + _eff.polyAR[2][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[3][0], _eff.y + _eff.dy + _eff.polyAR[3][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyAR[0][0], _eff.y + _eff.dy + _eff.polyAR[0][1])
+                    .stroke()
+                    .strokeStyle('#0F0')
+                    .beginPath()
+                    .moveTo(_eff.x + _eff.dx + _eff.polyBR[0][0], _eff.y + _eff.dy + _eff.polyBR[0][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[1][0], _eff.y + _eff.dy + _eff.polyBR[1][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[2][0], _eff.y + _eff.dy + _eff.polyBR[2][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[3][0], _eff.y + _eff.dy + _eff.polyBR[3][1])
+                    .lineTo(_eff.x + _eff.dx + _eff.polyBR[0][0], _eff.y + _eff.dy + _eff.polyBR[0][1])
+                    .stroke();
+                    //处理AABB包围盒
+                    var _aabbAR = _eff.getAABBAttackRect(), _aabbBR = _eff.getAABBBodyRect();
+                    $.canvas.strokeStyle('#000')
+                    .lineWidth(2)
+                    .strokeRect(_eff.x + _eff.dx + _aabbAR.x, 
+                    _eff.y + _eff.dy + _aabbAR.y, 
+                    _aabbAR.width, 
+                    _aabbAR.height)
+                    .strokeRect(_eff.x + _eff.dx + _aabbBR.x, 
+                    _eff.y + _eff.dy + _aabbBR.y, 
+                    _aabbBR.width, 
+                    _aabbBR.height);
+                }
+            }
+            _shelter = _eff = null;
 			return this;
 		},
 		/**
@@ -650,7 +733,8 @@ define([
 				this._sortStep %= this._sortStep_;
 			}
 			
-			this.flyingRoleObjsAction(); //飞行角色监听
+			this.flyingRoleObjsAction() //飞行角色监听
+			.bulletAction(); //子弹监听
 			
 			_car = _shelter = _focusP = _node = null;
 			return this;
@@ -2344,73 +2428,72 @@ define([
 		},
 		/**
 		 * 添加一个场景特效
-		 * @param {number|string} id
-		 * @param {object} sprite
-		 * @param {number} x0
-		 * @param {number} y0
-		 * @param {bool} loop
-		 * @param {number} cr
-		 * @param {number} step
-		 * @param {string} type
-		 * @param {number} x
-		 * @param {number} y
-		 * @param {number} aimX
-		 * @param {number} aimY
-		 * @param {string} timing
-		 * @param {number} speed
-		 * @param {number} during
-		 * @param {number|string} aimId
-		 * @param {number} dx
-		 * @param {number} dy
-		 * @param {bool} shine
+		 * @param {object} param
 		 */
-		addEffect: function(id, role, x0, y0, loop, cr, step, type, x, y, aimX, aimY, timing, speed, during, aimId, dx, dy, shine) {
-			var _type = type || 'front', _x = x || -1000, _y = y || -1000;
-			if (role && !this.getEffect(id)) {
-				var _checkIJ = this.checkIJ(x0, y0), _cutXY = (x0 == null && y0 == null && x == null && y == null) ? -1000 : 0;
-				x0 = _checkIJ ? _checkIJ[0]: 0;
-				y0 = _checkIJ ? _checkIJ[1]: 0;
+		addEffect: function(param) {
+			var _props = $.objExtend({
+			    id: 0,
+			    role: null,
+			    x0: null,
+			    y0: null,
+			    loop: true,
+			    current: 0,
+			    step: null,
+			    type: 'front',
+			    x: null,
+			    y: null,
+			    aimX: null,
+			    aimY: null,
+			    speed: 10,
+			    aimId: 0,
+			    dx: 0,
+			    dy: 0,
+			    shine: false
+			}, param || {});
+			var _type = _props.type, _x = _props.x || - 1000, _y = _props.y || -1000;
+			if (_props.role && !this.getEffect(_props.id)) {
+				var _checkIJ = this.checkIJ(_props.x0, _props.y0), _cutXY = (_props.x0 == null && _props.y0 == null && _props.x == null && _props.y == null) ? -1000 : 0;
+				_props.x0 = _checkIJ ? _checkIJ[0]: 0;
+				_props.y0 = _checkIJ ? _checkIJ[1]: 0;
 				_checkIJ = null;
-				role.x0 = x0; //A*据点索引
-				role.y0 = y0;
-				if (x == null && y == null) {
-					if (y0 != null)
-						_x = y0 * this.ow + (this.ow >> 1) + _cutXY;
-					if (x0 != null)
-						_y = x0 * this.oh + (this.oh >> 1) + _cutXY;
+				_props.role.x0 = _props.x0; //A*据点索引
+				_props.role.y0 = _props.y0;
+				if (_props.x == null && _props.y == null) {
+					if (_props.y0 != null)
+						_x = _props.y0 * this.ow + (this.ow >> 1) + _cutXY;
+					if (_props.x0 != null)
+						_y = _props.x0 * this.oh + (this.oh >> 1) + _cutXY;
 				}
 				_cutXY = null;
 				var _car = this.car;
-				role.id = id;
-				role.loop = loop;
-				role.type = _type;
-				role._aimObj = this.getRole(aimId); //将特效绑定到对应的目标角色上
-				if (role._aimObj) { //如果有关联的角色将特效id和类型绑定到角色上，等到角色被删除的时候方便统一删除
-					if (!role._aimObj.effects) {
-						role._aimObj.effects = [];
+				_props.role.id = _props.id;
+				_props.role.loop = _props.loop;
+				_props.role.type = _type;
+				_props.role._aimObj = this.getRole(_props.aimId); //将特效绑定到对应的目标角色上
+				if (_props.role._aimObj) { //如果有关联的角色将特效id和类型绑定到角色上，等到角色被删除的时候方便统一删除
+					if (!_props.role._aimObj.effects) {
+						_props.role._aimObj.effects = [];
 					}
-					role._aimObj.effects.push([role.id, role.type]);
+					_props.role._aimObj.effects.push([role.id, role.type]);
 				}
-				role._effDx = dx || 0;
-				role._effDy = dy || 0;
-				role.shine = shine; //判定特效是否可以显示在聚光灯之上
-				if (cr != null)
-					role.setSprite(cr);
-				if (step != null)
-					role.setStep(step);
-				role.mark(_x - _car.getMapOffX(), _y - _car.getMapOffY(), _x, _y);
-				if (aimX != null && aimY != null) {
-					var _path = this.getFly(_x, _y, aimX, aimY, timing, speed, during);
-					role.setPath(_path);
-					role.aimX = aimX;
-					role.aimY = aimY;
-					_path = null;
+				_props.role._effDx = _props.dx || 0;
+				_props.role._effDy = _props.dy || 0;
+				_props.role.shine = _props.shine; //判定特效是否可以显示在聚光灯之上
+				if (_props.current != null)
+					_props.role.setSprite(_props.current);
+				if (_props.step != null)
+					_props.role.setStep(_props.step);
+				_props.role.mark(_x - _car.getMapOffX(), _y - _car.getMapOffY(), _x, _y);
+				if (_props.aimX != null && _props.aimY != null) {
+					_props.role.setPath($.comm.createPath(_x, _y, _props.aimX, _props.aimY, _props.speed));
+					_props.role.aimX = _props.aimX;
+					_props.role.aimY = _props.aimY;
 				}
 				if (_type == 'front') {
-					this._frontEffs.unshift(role);
+					this._frontEffs.unshift(_props.role);
 				}
 				else if (_type == 'back') {
-					this._backEffs.unshift(role);
+					this._backEffs.unshift(_props.role);
 				}
 				_car = null;
 			}
@@ -2475,6 +2558,95 @@ define([
 			}
 			_arrIndex = null;
 			return this;
+		},
+		/**
+		 * 添加子弹 
+         * @param {object} param
+		 */
+		addBullet: function(param) {
+		    var _props = $.objExtend({
+		        id: 0,
+		        role: null,
+		        current: 0,
+		        step: 2,
+		        speed: 10,
+		        x: 0,
+		        y: 0,
+		        aimX: 0,
+		        aimY: 0,
+		        hitedObjs: {}, //标记已经发生过的碰撞物体
+		        life: 1, //子弹的生命
+		        type: 'front'
+		    }, param || {});
+		    if (this._bullets.indexOfAttr('id', _props.id) < 0 && _props.role) {
+		        //添加一个特效
+                this.addEffect({
+                    id: _props.id,
+                    role: _props.role,
+                    x: _props.x, 
+                    y: _props.y,
+                    aimX: _props.aimX,
+                    aimY: _props.aimY,
+                    loop: true,
+                    speed: _props.speed,
+                    _props: _props.current,
+                    step: _props.step,
+                    type: _props.type
+                });
+		        this._bullets.push(_props);
+		    }
+		    _props = null;
+		    return this;
+		},
+		/**
+		 * 子弹碰撞检测监听 
+		 */
+		bulletAction: function() {
+		    if (this._bullets.length > 0) {
+		        //四叉树分屏优化
+		        this._bulletTree.clear();
+		        var i, j, _shelter, _bullet, _items, _item, polygon1X, polygon1Y, polygon2X, polygon2Y;
+		        //添加碰撞目标角色到四叉树检测系统中
+		        for (i = this._shelters.length - 1; i >= 0; i--) {
+		            if ((_shelter = this._shelters[i]) && !_shelter.outScreen) {
+		                //获取场景角色身体矩形包围盒
+		                this._bulletTree.insert(_shelter.getAABBBodyRect());
+		            }
+		        }
+		        for (i = this._bullets.length - 1; i >= 0; i--) {
+		            if ((_bullet = this._bullets[i]) && !_bullet.role.outScreen) {
+		                if (_bullet.life > 0) {
+		                    //根据子弹特效的身体矩形包围盒赛选四叉树中可能的碰撞对象
+                            _items = this._bulletTree.retrieve(_bullet.role.getAABBBodyRect());
+                            //console.error('子弹', _bullet.id, '检测到', _items.length, '个可能碰撞的对象');
+                            for (j = _items.length -1; j >= 0; j--) {
+                                if ((_item = _items[j]) && !_bullet.hitedObjs[_items.id]) {
+                                    if (_shelter = this.getRole(_item.id)) {
+                                        //计算矩形碰撞时的角色位移坐标需要考虑移动速度,这样可以避免速度过快造成穿越的问题
+                                        polygon1X = _bullet.role.x + _bullet.role.dx;
+                                        polygon1Y = _bullet.role.y + _bullet.role.dy;
+                                        polygon2X = _shelter.x + _shelter.dx;
+                                        polygon2Y = _shelter.y + _shelter.dy;
+                                        if ($.comm.polygonCollision(_bullet.role.polyBR, _shelter.polyBR, polygon1X, polygon1Y, polygon2X, polygon2Y)) {
+                                            _bullet.life--;
+                                            _bullet.hitedObjs[_item.id] = { id: _item.id }; //标记和此对象已经碰撞过
+                                            console.error('子弹', _bullet.id, '与对象', _item.id, '发生碰撞');
+                                        }
+                                    }
+                                }
+                            }
+		                }
+		                else {
+		                    console.error('子弹', _bullet.id, '的碰撞检测结束', _bullet.hitedObjs);
+		                    //移除特效
+		                    this.removeEffect(_bullet.id, _bullet.type);
+		                    this._bullets.splice(0, 1);
+		                }
+		            }
+		        }
+		        i = _shelter = _bullet = _items = _item = polygon1X = polygon1Y = polygon2X = polygon2Y = null;
+		    }
+		    return this;
 		},
 		/**
 		 * 场景摇动效果

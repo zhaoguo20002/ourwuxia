@@ -102,7 +102,9 @@ define([
 		this.speed = 5;
 		this.links = []; //关联角色
 		this.polyAR = [[0, 0], [0, 0], [0, 0], [0, 0]]; //攻击矩形多边形行定点集合,角色采用obb碰撞检测模式,包围角色的永远是一个正矩形
+        this.aabbAR = [[0, 0], [0, 0], [0, 0], [0, 0]]; //攻击矩形包围盒集合
         this.polyBR = [[0, 0], [0, 0], [0, 0], [0, 0]]; //身体矩形多边形行定点集合,角色采用obb碰撞检测模式,包围角色的永远是一个正矩形
+	    this.aabbBR = [[0, 0], [0, 0], [0, 0], [0, 0]]; //身体矩形包围盒集合
 	};
 	/**
 	 * 设置当前角色的动作
@@ -220,7 +222,8 @@ define([
                 this._fA = _frameAll.fA; //缓存动作动画帧
                 this.aR = _frameAll.aR; //缓存攻击区域矩形
                 this.bR = _frameAll.bR; //缓存身体区域矩形
-                var _ar = this.getAttackRect(), _br = this.getBodyRect();
+                var _ar = this.getAttackRect(), _br = this.getBodyRect(), 
+                _minX = 0, _maxX = 0, _minY = 0, _maxY = 0;
                 //处理矩形的4个顶点
                 this.polyAR[0][0] = _ar.x;
                 this.polyAR[0][1] = _ar.y;
@@ -245,7 +248,36 @@ define([
                     $.comm.setMatrixRotate(this.polyAR, this.angle)
                     .setMatrixRotate(this.polyBR, this.angle);
                 }
-                _ar = _br = null;
+                //处理AABB包围盒
+                var side = 0, poly = this.polyAR, aabb = this.aabbAR;
+                while(side++ < 2) {
+                    for (var i = 0, node; node = poly[i]; i++) {
+                        if (node[0] > _maxX) {
+                            _maxX = node[0];
+                        }
+                        if (node[0] < _minX) {
+                            _minX = node[0];
+                        }
+                        if (node[1] > _maxY) {
+                            _maxY = node[1];
+                        }
+                        if (node[1] < _minY) {
+                            _minY = node[1];
+                        }
+                    }
+                    aabb[0][0] = _minX;
+                    aabb[0][1] = _minY;
+                    aabb[1][0] = _maxX;
+                    aabb[1][1] = _minY;
+                    aabb[2][0] = _maxX;
+                    aabb[2][1] = _maxY;
+                    aabb[3][0] = _minX;
+                    aabb[3][1] = _maxY;
+                    
+                    poly = this.polyBR;
+                    aabb = this.aabbBR;
+                }
+                _ar = _br = _minX = _maxX = _minY = _maxY = null;
             }
         }
         _sprite = _frame = _frameAll = null;
@@ -480,11 +512,23 @@ define([
 		}
 		var ar = this.frames[_frame.args[0]].aR;
 		if ((spriteIndex == null && _sprite.trans != $.trans.TRANS_NONE) || spriteIndex < 0) {
-			return { x: -(ar[0] + ar[2] * this.zoom), y: ar[1] * this.zoom, width: ar[2] * this.zoom, height: ar[3] * this.zoom }; 
+			return { id: this.id, x: -(ar[0] + ar[2] * this.zoom), y: ar[1] * this.zoom, width: ar[2] * this.zoom, height: ar[3] * this.zoom }; 
 		}
 		else {
-			return { x: ar[0] * this.zoom, y: ar[1] * this.zoom, width: ar[2] * this.zoom, height: ar[3] * this.zoom };
+			return { id: this.id, x: ar[0] * this.zoom, y: ar[1] * this.zoom, width: ar[2] * this.zoom, height: ar[3] * this.zoom };
 		}
+	};
+    /**
+     * 获取身体矩形AABB包围盒 
+     */
+    $.action.Role.prototype.getAABBBodyRect = function() {
+        return { id: this.id, x: this.aabbBR[0][0], y: this.aabbBR[0][1], width: Math.abs(this.aabbBR[1][0] - this.aabbBR[0][0]), height: Math.abs(this.aabbBR[2][1] - this.aabbBR[1][1]) };
+    };
+	/**
+	 * 获取攻击矩形AABB包围盒 
+	 */
+	$.action.Role.prototype.getAABBAttackRect = function() {
+	    return { id: this.id, x: this.aabbAR[0][0], y: this.aabbAR[0][1], width: Math.abs(this.aabbAR[1][0] - this.aabbAR[0][0]), height: Math.abs(this.aabbAR[2][1] - this.aabbAR[1][1]) };
 	};
 	/**
 	 * 更改所有精灵动画的播放频率
@@ -693,11 +737,18 @@ define([
 	};
 	/**
 	 * 返回当前角色路径的数量
+     * @returns {number}
 	 */
 	$.action.Role.prototype.getPathCount = function() {
 		return this._path.length;
 	};
-	
+	/**
+	 * 获取当前第一个移动路径[即下一帧的偏移量] 
+     * @returns {array}
+	 */
+	$.action.Role.prototype.getFirstPath = function() {
+        return this._path.length > 0 ? this._path[0] : [0, 0];
+    };
 	/**
 	 * 角色匀速平移到指定坐标
 	 * @param {number} x
