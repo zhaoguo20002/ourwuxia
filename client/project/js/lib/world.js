@@ -2485,9 +2485,12 @@ define([
 					_props.role.setStep(_props.step);
 				_props.role.mark(_x - _car.getMapOffX(), _y - _car.getMapOffY(), _x, _y);
 				if (_props.aimX != null && _props.aimY != null) {
-					_props.role.setPath($.comm.createPath(_x, _y, _props.aimX, _props.aimY, _props.speed));
+				    var _newPath = $.comm.createPath(_x, _y, _props.aimX, _props.aimY, _props.speed);
+					_props.role.setPath(_newPath)
+					.setRotate(_newPath.angle); //设置旋转角度
 					_props.role.aimX = _props.aimX;
 					_props.role.aimY = _props.aimY;
+					_newPath = null;
 				}
 				if (_type == 'front') {
 					this._frontEffs.unshift(_props.role);
@@ -2568,7 +2571,7 @@ define([
 		        id: 0,
 		        role: null,
 		        current: 0,
-		        step: 2,
+		        step: 0,
 		        speed: 10,
 		        x: 0,
 		        y: 0,
@@ -2589,7 +2592,7 @@ define([
                     aimY: _props.aimY,
                     loop: true,
                     speed: _props.speed,
-                    _props: _props.current,
+                    current: _props.current,
                     step: _props.step,
                     type: _props.type
                 });
@@ -2627,7 +2630,7 @@ define([
                                         polygon1Y = _bullet.role.y + _bullet.role.dy;
                                         polygon2X = _shelter.x + _shelter.dx;
                                         polygon2Y = _shelter.y + _shelter.dy;
-                                        if ($.comm.polygonCollision(_bullet.role.polyBR, _shelter.polyBR, polygon1X, polygon1Y, polygon2X, polygon2Y)) {
+                                        if ($.comm.polygonCollision(_bullet.role.polyBR, _shelter.polyBR, polygon1X, polygon1Y, polygon2X, polygon2Y, _bullet.role.getFirstPath(), _shelter.getFirstPath())) {
                                             _bullet.life--;
                                             _bullet.hitedObjs[_item.id] = { id: _item.id }; //标记和此对象已经碰撞过
                                             console.error('子弹', _bullet.id, '与对象', _item.id, '发生碰撞');
@@ -2640,7 +2643,7 @@ define([
 		                    console.error('子弹', _bullet.id, '的碰撞检测结束', _bullet.hitedObjs);
 		                    //移除特效
 		                    this.removeEffect(_bullet.id, _bullet.type);
-		                    this._bullets.splice(0, 1);
+		                    this._bullets.splice(i, 1);
 		                }
 		            }
 		        }

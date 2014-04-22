@@ -61,9 +61,14 @@ define([
 			}
 			_model.world.addBullet({
 			    id: 'e1',
-			    role: man_001NameSpace.get(0),
-			    x: 50, y: 50, aimX: 270, aimY: 450, speed: 200
-			});
+			    role: man_001NameSpace.get(12),
+			    x: 50, y: 50, aimX: 300, aimY: 470, speed: 10
+			})
+			.addBullet({
+                id: 'e2',
+                role: man_001NameSpace.get(12),
+                x: 700, y: 200, aimX: 220, aimY: 400, speed: 10
+            });
 			_model = null;
 			return this;
 		},

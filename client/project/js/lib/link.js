@@ -1723,8 +1723,8 @@ var link, jsGame;
              *  @param {number} x2
              *  @param {number} y2
 			 */
-			polygonCollision: function(poly1, poly2, x1, y1, x2, y2) {
-			    return this.polygonSAT(poly1, poly2, x1, y1, x2, y2) && this.polygonSAT(poly2, poly1, x2, y2, x1, y1);
+			polygonCollision: function(poly1, poly2, x1, y1, x2, y2, v1, v2) {
+			    return this.polygonSAT(poly1, poly2, x1, y1, x2, y2, v1, v2) && this.polygonSAT(poly2, poly1, x2, y2, x1, y1, v2, v1);
 			},
 			/**
 			 *  分离轴算法
@@ -1736,10 +1736,10 @@ var link, jsGame;
              *  @param {number} x2
              *  @param {number} y2
 			 */
-			polygonSAT: function(poly1, poly2, x1, y1, x2, y2) {
+			polygonSAT: function(poly1, poly2, x1, y1, x2, y2, v1, v2) {
 			    var alen = poly1.length, 
 			    blen = poly2.length, 
-			    _x1 = x1 || 0, _y1 = y1 || 0, _x2 = x2 || 0, _y2 = y2 || 0,
+			    _x1 = x1 || 0, _y1 = y1 || 0, _x2 = x2 || 0, _y2 = y2 || 0, _v1 = v1, _v2 = v2,
 			    px = _x1 + poly1[poly1.length - 1][0], 
                 py = _y1 + poly1[poly1.length - 1][1], 
                 qx, qy, nx, ny, NdotP, allOutside, vx, vy, det, i, j;
@@ -1769,8 +1769,26 @@ var link, jsGame;
                         }
                     }
             
-                    if (allOutside)
-                        return false;
+                    if (allOutside) {
+                        //检测到可以切分两个多边形的向量后再检测该向量的推力向量,防止速度过快产生穿越
+                        if (_v1[0] != 0 || _v1[1] != 0 || _v2[0] != 0 || _v2[1] != 0) {
+                            //推力向量在法向量上的投影
+                            NdotP = nx * (px + _v1[0]) + ny * (py + _v1[1]);
+                            for (j = 0; j < blen; j++) {
+                                vx = _x2 + poly2[j][0] + _v2[0];
+                                vy = _y2 + poly2[j][1] + _v2[1];
+                                //判断推力向量投影是否与目标物体的投影是否重叠
+                                det = nx * vx + ny * vy - NdotP;
+                                if (det < 0) {
+                                    allOutside = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (allOutside) {
+                            return false;
+                        }
+                    }
             
                     px = qx;
                     py = qy;
@@ -1841,6 +1859,10 @@ var link, jsGame;
 				_r = _step, _lx = 0, _ly = 0, _px, _py,
 				_rotate = (Math.atan2(_b, _a) / Math.PI * 180);  //角度[90度开始为0度]
 				_rotate = _rotate >= 0 ? _rotate : _rotate + 360;
+				if (_r >= _c) {
+				    //如果移动的速度大于了两点间的距离,则需要将速度变为两点间距离的一半,至少保证有两段路径
+				    _r = _c >> 1;
+				}
 				while (_r < _c + _step) {
 					//半径逐渐变大，换算出路径上的坐标集合
 					_r = _r > _c ? _c : _r;
@@ -1851,7 +1873,7 @@ var link, jsGame;
 					_ly = _py;
 					_r += _step;
 				}
-				_path.angle = _rotate - 90; //将路径对应的旋转角度绑定到路径上的angle属性
+				_path.angle = _rotate + 90; //将路径对应的旋转角度绑定到路径上的angle属性
 				_x1 = _y1 = _x2 = _y2 = _a = _b = _c = _step = _r = _rotate = null;
 				return _path;
 			}
