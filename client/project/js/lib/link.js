@@ -554,7 +554,8 @@ var link, jsGame;
                 this.released = false;
                 this.goned = false; //标记是否即将飘走
                 this.cacheId = 'buttonLayoutCache_' + this.id;
-                this.refresh();
+                this.setDelay(obj.delay)
+                .refresh();
             }, null, {
                 //刷新缓冲区
                 refresh: function() {
@@ -621,8 +622,8 @@ var link, jsGame;
                     return this;
                 },
                 //设置路径
-                setPath: function(path) {
-                    this.path = path || [];
+                setPath: function(path, delay) {
+                    this.setDelay(delay).path = path || [];
                     return this;
                 },
                 //是否停止
@@ -630,8 +631,17 @@ var link, jsGame;
                     return this.path.length == 0;
                 },
                 //使按钮即将飘走
-                gone: function(path) {
-                    this.setPath(path).goned = true;
+                gone: function(path, delay) {
+                    this.setPath(path, delay).goned = true;
+                    return this;
+                },
+                //设置按钮路径延迟
+                setDelay: function(delay) {
+                    this.delay = delay || 0;
+                    this.delayDate = null;
+                    if (this.delay > 0) {
+                        this.delayDate = Date.now();
+                    }
                     return this;
                 },
                 //监听器
@@ -639,11 +649,18 @@ var link, jsGame;
                     if (this.hided) {
                         return this;
                     }
-                    if (this.path.length > 0) {
-                        var _node = this.path.shift();
-                        this.x += _node[0];
-                        this.y += _node[1];
-                        _node = null;
+                    if (this.delayDate) {
+                        if (Date.now() - this.delayDate >= this.delay) {
+                            this.delayDate = null;
+                        }
+                    }
+                    if (!this.delayDate) {
+                        if (this.path.length > 0) {
+                            var _node = this.path.shift();
+                            this.x += _node[0];
+                            this.y += _node[1];
+                            _node = null;
+                        }
                     }
                     return this;
                 },
@@ -4152,12 +4169,13 @@ var link, jsGame;
              * @returns {link.buttonLayout}
              * @param {string} id
              * @param {array} path
+             * @param {number} delay
 		     */
-		    gone: function(id, path) {
+		    gone: function(id, path, delay) {
 		        var _button = this.get(id);
                 if (_button) {
                     var _path = path || [];
-                    _button.gone(_path);
+                    _button.gone(_path, delay);
                     _path = null;
                 }
                 _button = null; 
