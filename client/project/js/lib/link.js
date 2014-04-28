@@ -561,12 +561,17 @@ var link, jsGame;
                     //将按钮的3中状态都画入缓冲区
                     _that.canvas.pass(this.cacheId, this.width * 3, this.height);
                     if (this.imageId == '') {
-                        _that.canvas.fillStyle(this.bgColor).fillRect(0, 0, this.width, this.height)
-                        .fillRect(this.width, 0, this.width, this.height)
-                        .fillRect(this.width * 2, 0, this.width, this.height)
-                        .strokeStyle(this.bgStroke).strokeRect(1, 1, this.width - 2, this.height - 2)
-                        .strokeRect(this.width + 1, 1, this.width - 2, this.height - 2)
-                        .strokeRect(this.width * 2 + 1, 1, this.width - 2, this.height - 2);
+                        if (this.bgColor != '') {
+                            _that.canvas.fillStyle(this.bgColor).fillRect(0, 0, this.width, this.height)
+                            .fillRect(this.width, 0, this.width, this.height)
+                            .fillRect(this.width * 2, 0, this.width, this.height);
+                            
+                        }
+                        if (this.bgStroke != '') {
+                            _that.canvas.strokeStyle(this.bgStroke).strokeRect(1, 1, this.width - 2, this.height - 2)
+                            .strokeRect(this.width + 1, 1, this.width - 2, this.height - 2)
+                            .strokeRect(this.width * 2 + 1, 1, this.width - 2, this.height - 2);
+                        }
                     }
                     else {
                         _that.canvas.drawImage(this.imageId, this.sx, this.sy, this.width, this.height, 0, 0, this.width, this.height)
