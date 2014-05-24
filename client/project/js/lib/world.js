@@ -2633,14 +2633,14 @@ define([
                                         if ($.comm.polygonCollision(_bullet.role.polyBR, _shelter.polyBR, polygon1X, polygon1Y, polygon2X, polygon2Y, _bullet.role.getFirstPath(), _shelter.getFirstPath())) {
                                             _bullet.life--;
                                             _bullet.hitedObjs[_item.id] = { id: _item.id }; //标记和此对象已经碰撞过
-                                            console.error('子弹', _bullet.id, '与对象', _item.id, '发生碰撞');
+                                            //console.error('子弹', _bullet.id, '与对象', _item.id, '发生碰撞');
                                         }
                                     }
                                 }
                             }
 		                }
 		                else {
-		                    console.error('子弹', _bullet.id, '的碰撞检测结束', _bullet.hitedObjs);
+		                    //console.error('子弹', _bullet.id, '的碰撞检测结束', _bullet.hitedObjs);
 		                    //移除特效
 		                    this.removeEffect(_bullet.id, _bullet.type);
 		                    this._bullets.splice(i, 1);

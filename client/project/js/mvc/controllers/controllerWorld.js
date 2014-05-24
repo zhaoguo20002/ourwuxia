@@ -69,6 +69,13 @@ define([
                 role: man_001NameSpace.get(12),
                 x: 700, y: 200, aimX: 220, aimY: 400, speed: 10
             });
+            for (var i = 0; i < 100; i++) {
+                _model.world.addBullet({
+                    id: 'bullet' + i,
+                    role: man_001NameSpace.get(12),
+                    x: $.comm.getRandom(0, 800), y: $.comm.getRandom(0, 800), aimX: 520, aimY: 400, speed: 10
+                });
+            }
 			_model = null;
 			return this;
 		},
@@ -269,7 +276,8 @@ define([
 		action: function() {
 			var _model = this.view.model;
 			if (_model.world) {
-				_model.world.action().render().debugRender();
+				_model.world.action().render();
+				//_model.world.debugRender();
 				
 				this.lockEnemyAction() //索敌监听
 				.UIAction(); //UI事件监听
